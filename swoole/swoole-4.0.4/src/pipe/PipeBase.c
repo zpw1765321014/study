@@ -24,8 +24,16 @@ static int swPipeBase_close(swPipe *p);
 typedef struct _swPipeBase
 {
     int pipes[2];
-} swPipeBase;
-
+} swPipeBase;  //基类管道
+/**
+ * @brief 
+ * 命名管道和匿名管道，
+ * 匿名管道专门用于具有血缘关系的进程之间，完成数据传递，
+ * 命名管道可以用于任何两个进程之间。swoole 中的管道都是匿名管道。
+ * @param p 
+ * @param blocking 
+ * @return int 
+ */
 int swPipeBase_create(swPipe *p, int blocking)
 {
     int ret;
@@ -35,6 +43,7 @@ int swPipeBase_create(swPipe *p, int blocking)
         return -1;
     }
     p->blocking = blocking;
+    //创建匿名管道
     ret = pipe(object->pipes);
     if (ret < 0)
     {
@@ -49,19 +58,22 @@ int swPipeBase_create(swPipe *p, int blocking)
         swSetNonBlock(object->pipes[1]);
         p->timeout = -1;
         p->object = object;
-        p->read = swPipeBase_read;
+        p->read = swPipeBase_read;   //设置对应的回调函数
         p->write = swPipeBase_write;
         p->getFd = swPipeBase_getFd;
         p->close = swPipeBase_close;
     }
     return 0;
 }
-
+// swPipeBase_read 管道的读
 static int swPipeBase_read(swPipe *p, void *data, int length)
-{
+{   
+    //printf("read piping data from pipe %s\n",*((char *)data));
+    //printf("read piping data from pipe %s\n",*((char *)data));
     swPipeBase *object = p->object;
     if (p->blocking == 1 && p->timeout > 0)
-    {
+    {    
+        // 由于匿名管道被设置为非阻塞式，无法实现超时等待写入
         if (swSocket_wait(object->pipes[0], p->timeout * 1000, SW_EVENT_READ) < 0)
         {
             return SW_ERR;
@@ -69,19 +81,19 @@ static int swPipeBase_read(swPipe *p, void *data, int length)
     }
     return read(object->pipes[0], data, length);
 }
-
+// swPipeBase_write 管道的写入 管道的写入直接调用 write 即可，非阻塞式 IO 会立刻返回结果。
 static int swPipeBase_write(swPipe *p, void *data, int length)
 {
     swPipeBase *this = p->object;
     return write(this->pipes[1], data, length);
 }
-
+// 本函数用于获取管道的读端或者写端。
 static int swPipeBase_getFd(swPipe *p, int isWriteFd)
 {
     swPipeBase *this = p->object;
     return (isWriteFd == 0) ? this->pipes[0] : this->pipes[1];
 }
-
+// swPipeBase_close 关闭管道
 static int swPipeBase_close(swPipe *p)
 {
     int ret1, ret2;

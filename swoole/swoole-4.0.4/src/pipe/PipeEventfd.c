@@ -24,11 +24,14 @@ static int swPipeEventfd_write(swPipe *p, void *data, int length);
 static int swPipeEventfd_getFd(swPipe *p, int isWriteFd);
 static int swPipeEventfd_close(swPipe *p);
 
+//数据结构中仅仅存放 eventfd 函数返回的文件描述符
+//和 pipe 管道不同的是，eventfd 只有一个文件描述符，读和写都是对这个文件描述符进行操作
+// 该管道同样也是只适用于进程间单向通信
 typedef struct _swPipeEventfd
 {
     int event_fd;
 } swPipeEventfd;
-
+//管道的创建
 int swPipeEventfd_create(swPipe *p, int blocking, int semaphore, int timeout)
 {
     int efd;
@@ -80,7 +83,15 @@ int swPipeEventfd_create(swPipe *p, int blocking, int semaphore, int timeout)
     }
     return 0;
 }
-
+// swPipeEventfd_read 管道的读取
+/**
+ * @brief 
+ * 由于 eventfd 可能是阻塞式，因此 read 时可能会被信号打断
+ * @param p 
+ * @param data 
+ * @param length 
+ * @return int 
+ */
 static int swPipeEventfd_read(swPipe *p, void *data, int length)
 {
     int ret = -1;
@@ -106,7 +117,7 @@ static int swPipeEventfd_read(swPipe *p, void *data, int length)
     }
     return ret;
 }
-
+// 写入和读取的过程类似，注意被信号打断后继续循环即可。
 static int swPipeEventfd_write(swPipe *p, void *data, int length)
 {
     int ret;
@@ -125,12 +136,12 @@ static int swPipeEventfd_write(swPipe *p, void *data, int length)
     }
     return ret;
 }
-
+// swPipeEventfd_getFd 获取socket 管道的fd
 static int swPipeEventfd_getFd(swPipe *p, int isWriteFd)
 {
     return ((swPipeEventfd *) (p->object))->event_fd;
 }
-
+// swPipeEventfd_close 关闭管道
 static int swPipeEventfd_close(swPipe *p)
 {
     int ret;

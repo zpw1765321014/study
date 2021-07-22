@@ -39,7 +39,14 @@ static int swReactorEpoll_set(swReactor *reactor, int fd, int fdtype);
 static int swReactorEpoll_del(swReactor *reactor, int fd);
 static int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo);
 static void swReactorEpoll_free(swReactor *reactor);
-
+/**
+ * @brief 
+ * 
+ * 函数用于转化可读(SW_EVENT_READ)、可写(SW_EVENT_WRITE )的状态为 epoll
+ *  函数可用的 EPOLLIN、EPOLLOUT、EPOLLERR
+ * @param fdtype 
+ * @return sw_inline 
+ */
 static sw_inline int swReactorEpoll_event_set(int fdtype)
 {
     uint32_t flag = 0;
@@ -62,15 +69,26 @@ static sw_inline int swReactorEpoll_event_set(int fdtype)
     }
     return flag;
 }
-
+/**
+ * @brief 
+ * 
+ * epoll 全局结构体
+ * */
 struct swReactorEpoll_s
 {
-    int epfd;
-    struct epoll_event *events;
+    int epfd; // 红黑树的跟节点
+    struct epoll_event *events;  //events 用于在 epoll_wait 函数接受就绪的事件。
 };
-
+/**
+ * @brief 
+ *  epoll 的创建
+ * @param reactor 
+ * @param max_event_num 
+ * @return int 
+ */
 int swReactorEpoll_create(swReactor *reactor, int max_event_num)
-{
+{  
+    //printf("max_event_num is %d\n", max_event_num);
     //create reactor object
     swReactorEpoll *reactor_object = sw_malloc(sizeof(swReactorEpoll));
     if (reactor_object == NULL)
@@ -107,7 +125,11 @@ int swReactorEpoll_create(swReactor *reactor, int max_event_num)
 
     return SW_OK;
 }
-
+/**
+ * @brief 
+ * 释放 reactor 对象
+ * @param reactor 
+ */
 static void swReactorEpoll_free(swReactor *reactor)
 {
     swReactorEpoll *object = reactor->object;
@@ -115,7 +137,14 @@ static void swReactorEpoll_free(swReactor *reactor)
     sw_free(object->events);
     sw_free(object);
 }
-
+/**
+ * @brief 
+ * swReactorEpoll_add 函数用于为 reactor 添加新的文件描述符进行监控
+ * @param reactor 
+ * @param fd 
+ * @param fdtype 
+ * @return int 
+ */
 static int swReactorEpoll_add(swReactor *reactor, int fd, int fdtype)
 {
     swReactorEpoll *object = reactor->object;
@@ -125,7 +154,7 @@ static int swReactorEpoll_add(swReactor *reactor, int fd, int fdtype)
 
     fd_.fd = fd;
     fd_.fdtype = swReactor_fdtype(fdtype);
-    e.events = swReactorEpoll_event_set(fdtype);
+    e.events = swReactorEpoll_event_set(fdtype); //事件类型
 
     swReactor_add(reactor, fd, fdtype);
 
@@ -142,10 +171,17 @@ static int swReactorEpoll_add(swReactor *reactor, int fd, int fdtype)
 
     return SW_OK;
 }
-
+/**
+ * @brief 
+ * 修改监听主要调用 epoll_ctl 的 EPOLL_CTL_DEL 命令
+ * @param reactor 
+ * @param fd 
+ * @return int 
+ */
 static int swReactorEpoll_del(swReactor *reactor, int fd)
 {
     swReactorEpoll *object = reactor->object;
+    //数据的核心删除
     if (epoll_ctl(object->epfd, EPOLL_CTL_DEL, fd, NULL) < 0)
     {
         swSysError("epoll remove fd[%d#%d] failed.", fd, reactor->id);
@@ -153,12 +189,19 @@ static int swReactorEpoll_del(swReactor *reactor, int fd)
     }
 
     swTraceLog(SW_TRACE_REACTOR, "remove event[reactor_id=%d|fd=%d]", reactor->id, fd);
-    reactor->event_num = reactor->event_num <= 0 ? 0 : reactor->event_num - 1;
+    reactor->event_num = reactor->event_num <= 0 ? 0 : reactor->event_num - 1; //更新对应的个数
     swReactor_del(reactor, fd);
 
     return SW_OK;
 }
-
+/**
+ * @brief 
+ * 修改监听主要调用 epoll_ctl 的 EPOLL_CTL_MOD 命令
+ * @param reactor 
+ * @param fd 
+ * @param fdtype 
+ * @return int 
+ */
 static int swReactorEpoll_set(swReactor *reactor, int fd, int fdtype)
 {
     swReactorEpoll *object = reactor->object;
@@ -177,7 +220,7 @@ static int swReactorEpoll_set(swReactor *reactor, int fd, int fdtype)
     fd_.fd = fd;
     fd_.fdtype = swReactor_fdtype(fdtype);
     memcpy(&(e.data.u64), &fd_, sizeof(fd_));
-
+     //数据的核心修改
     ret = epoll_ctl(object->epfd, EPOLL_CTL_MOD, fd, &e);
     if (ret < 0)
     {
@@ -189,7 +232,13 @@ static int swReactorEpoll_set(swReactor *reactor, int fd, int fdtype)
     swReactor_set(reactor, fd, fdtype);
     return SW_OK;
 }
-
+/**
+ * @brief 
+ * Epoll 监听等待就绪 epoll_wait
+ * @param reactor 
+ * @param timeo 
+ * @return int 
+ */
 static int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
 {
     swEvent event;
@@ -223,8 +272,9 @@ static int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
             reactor->onBegin(reactor);
         }
         msec = reactor->timeout_msec;
+        //获取就绪事件
         n = epoll_wait(epoll_fd, events, max_event_num, msec);
-        if (n < 0)
+        if (n < 0)  //出错
         {
             if (swReactor_error(reactor) < 0)
             {
@@ -236,7 +286,7 @@ static int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
                 continue;
             }
         }
-        else if (n == 0)
+        else if (n == 0)// 没有
         {
             if (reactor->onTimeout != NULL)
             {
@@ -244,6 +294,7 @@ static int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
             }
             continue;
         }
+        //遍历对应的就绪事件的fd
         for (i = 0; i < n; i++)
         {
             event.fd = events[i].data.u64;
@@ -251,7 +302,7 @@ static int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
             event.type = events[i].data.u64 >> 32;
             event.socket = swReactor_get(reactor, event.fd);
 
-            //read
+            //read epollin就绪事件可读
             if ((events[i].events & EPOLLIN) && !event.socket->removed)
             {
                 handle = swReactor_getHandle(reactor, SW_EVENT_READ, event.type);
@@ -261,7 +312,7 @@ static int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
                     swSysError("EPOLLIN handle failed. fd=%d.", event.fd);
                 }
             }
-            //write
+            //write 就绪事件可写
             if ((events[i].events & EPOLLOUT) && !event.socket->removed)
             {
                 handle = swReactor_getHandle(reactor, SW_EVENT_WRITE, event.type);
@@ -271,7 +322,7 @@ static int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
                     swSysError("EPOLLOUT handle failed. fd=%d.", event.fd);
                 }
             }
-            //error
+            //error 事件出现异常的情况
             if ((events[i].events & (EPOLLRDHUP | EPOLLERR | EPOLLHUP)) && !event.socket->removed)
             {
                 //ignore ERR and HUP, because event is already processed at IN and OUT handler.
@@ -286,6 +337,7 @@ static int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
                     swSysError("EPOLLERR handle failed. fd=%d.", event.fd);
                 }
             }
+            // notice
             if (!event.socket->removed && (event.socket->events & SW_EVENT_ONCE))
             {
                 reactor->event_num = reactor->event_num <= 0 ? 0 : reactor->event_num - 1;

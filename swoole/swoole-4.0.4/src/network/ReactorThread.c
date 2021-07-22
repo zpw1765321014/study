@@ -1402,7 +1402,8 @@ static int swReactorThread_loop(swThreadParam *param)
                 reactor->add(reactor, pipe_fd, SW_FD_PIPE);
 
                 if (thread->notify_pipe == 0)
-                {
+                {   
+                    // 当 reactor 线程启动的时候，会将 pipe_master 加入 reactor 的监控当中。
                     thread->notify_pipe = serv->workers[i].pipe_worker;
                 }
 

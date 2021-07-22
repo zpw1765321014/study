@@ -565,6 +565,7 @@ int swServer_create_task_worker(swServer *serv)
  * */
 int swServer_worker_init(swServer *serv, swWorker *worker)
 {
+    //是否绑定cpu
 #ifdef HAVE_CPU_AFFINITY
     if (serv->open_cpu_affinity)
     {
@@ -592,7 +593,7 @@ int swServer_worker_init(swServer *serv, swWorker *worker)
 
     //signal init
     swWorker_signal_init();
-
+    // buffer_input 用于存储来源于 reactor 线程发送的数据
     SwooleWG.buffer_input = swServer_create_worker_buffer(serv);
     if (!SwooleWG.buffer_input)
     {
@@ -808,7 +809,7 @@ int swServer_start(swServer *serv)
         ret = snprintf(SwooleTG.buffer_stack->str, SwooleTG.buffer_stack->size, "%d", getpid());
         swoole_file_put_contents(serv->pid_file, SwooleTG.buffer_stack->str, ret);
     }
-    printf("%d\n",serv->factory_mode);
+    //printf("%d\n",serv->factory_mode);
     if (serv->factory_mode == SW_MODE_SINGLE)
     {
         ret = swReactorProcess_start(serv);
@@ -1037,7 +1038,7 @@ int swServer_tcp_feedback(swServer *serv, int fd, int event)
     {
         return swWorker_send2reactor((swEventData *) &_send.info, sizeof(_send.info), fd);
     }
-    else
+    else  //BASE mode == SW_MODE_模式
     {
         return swReactorThread_send(&_send);
     }
@@ -1072,7 +1073,9 @@ swPipe * swServer_get_pipe_object(swServer *serv, int pipe_fd)
 {
     return (swPipe *) serv->connection_list[pipe_fd].object;
 }
-
+/*********
+ * swServer_tcp_send 函数
+ * */
 int swServer_tcp_send(swServer *serv, int fd, void *data, uint32_t length)
 {
     swSendData _send;

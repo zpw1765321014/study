@@ -20,7 +20,7 @@ static int swPipeUnsock_read(swPipe *p, void *data, int length);
 static int swPipeUnsock_write(swPipe *p, void *data, int length);
 static int swPipeUnsock_getFd(swPipe *p, int master);
 static int swPipeUnsock_close(swPipe *p);
-//unixsocket 的结构体
+//unixsocket 的结构体  pipe 的匿名管道，swPipeUnsock 管道是双向通信的管道。
 typedef struct _swPipeUnsock
 {
     /**
@@ -37,7 +37,7 @@ typedef struct _swPipeUnsock
      */
     uint8_t pipe_worker_closed;
 } swPipeUnsock;
-
+// swPipeUnsock_getFd 函数
 static int swPipeUnsock_getFd(swPipe *p, int master)
 {
     swPipeUnsock *this = p->object;
@@ -93,7 +93,7 @@ int swPipeUnsock_close_ext(swPipe *p, int which)
  */
 int swPipeUnsock_create(swPipe *p, int blocking, int protocol)
 {  
-   
+
     int ret;
     swPipeUnsock *object = sw_malloc(sizeof(swPipeUnsock));
     if (object == NULL)

@@ -432,7 +432,7 @@ configure:6411: $? = 0
 configure:6420: result: yes
 configure:6428: checking for kqueue in -lc
 configure:6453: g++ -o conftest -g -O2   -lpthread -z now conftest.cpp -lc   >&5
-/tmp/cci9bbUw.o: In function `main':
+/tmp/ccMZDHNw.o: In function `main':
 /data/C_study/swoole/swoole-4.0.4/conftest.cpp:31: undefined reference to `kqueue'
 collect2: error: ld returned 1 exit status
 configure:6453: $? = 1
