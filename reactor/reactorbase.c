@@ -26,3 +26,12 @@ epoll:
          //LT (LEvel Triggered)水平触发 只要有数据 才会触发
 
     
+    4.epoll ET模式 + 非阻塞 + void *ptr
+      
+      原来:socket bind listen -- epoll_create 创建监听红黑树 --- 返回 epfd 
+          epoll_ctl 向树上添加fd  epoll_wait监听fd 的就绪事件  有事件满足条件  判断数组元素
+          lfd满足是accpet 事件      cfd满足条件  read recv send write 等。。
+    
+    5.epoll 反应堆模型
+         把对IO的管理转换成对事件的管理  不同的IO处理交给对应的处理回调函数 accept 的处理  数据可读
+         数据可写  以及客户端的关闭连接
