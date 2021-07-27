@@ -1,5 +1,9 @@
 #include <stdio.h>
-
+/**
+ * @brief 
+ * 指针所占用的字节数
+ * 
+ */
 const int MAX = 3;
 
 int main()
