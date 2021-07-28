@@ -23,7 +23,7 @@ static int swCond_wait(swCond *cond);
 static int swCond_lock(swCond *cond);
 static int swCond_unlock(swCond *cond);
 static void swCond_free(swCond *cond);
-
+// 条件变量的创建
 int swCond_create(swCond *cond)
 {
     if (pthread_cond_init(&cond->_cond, NULL) < 0)
@@ -46,7 +46,7 @@ int swCond_create(swCond *cond)
 
     return SW_OK;
 }
-
+/*值得注意的是，条件变量的函数使用一定要结合 swCond_lock、swCond_unlock 等函数 start*/
 static int swCond_notify(swCond *cond)
 {
     return pthread_cond_signal(&cond->_cond);
@@ -87,3 +87,4 @@ static void swCond_free(swCond *cond)
     pthread_cond_destroy(&cond->_cond);
     cond->_lock.free(&cond->_lock);
 }
+/*值得注意的是，条件变量的函数使用一定要结合 swCond_lock、swCond_unlock 等函数 end*/

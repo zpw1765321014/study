@@ -929,13 +929,13 @@ typedef struct _swSpinLock
 } swSpinLock;
 #endif
 
-typedef struct _swAtomicLock
+typedef struct _swAtomicLock   //swooel  原子锁
 {
     sw_atomic_t lock_t;
     uint32_t spin;
 } swAtomicLock;
 
-typedef struct _swSem
+typedef struct _swSem   //信号量也是数据同步的一种方式 主要用于进程
 {
     key_t key;
     int semid;
