@@ -22,7 +22,7 @@ static int swSpinLock_lock(swLock *lock);
 static int swSpinLock_unlock(swLock *lock);
 static int swSpinLock_trylock(swLock *lock);
 static int swSpinLock_free(swLock *lock);
-
+//自旋锁的创建
 int swSpinLock_create(swLock *lock, int use_in_process)
 {
     int ret;
@@ -38,7 +38,7 @@ int swSpinLock_create(swLock *lock, int use_in_process)
     lock->free = swSpinLock_free;
     return 0;
 }
-
+/*自旋锁函数 的相关函数 start*/
 static int swSpinLock_lock(swLock *lock)
 {
     return pthread_spin_lock(&lock->object.spinlock.lock_t);
@@ -58,5 +58,5 @@ static int swSpinLock_free(swLock *lock)
 {
     return pthread_spin_destroy(&lock->object.spinlock.lock_t);
 }
-
+/*自旋锁函数 的相关函数 end*/
 #endif

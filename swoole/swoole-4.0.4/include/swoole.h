@@ -106,7 +106,7 @@ typedef unsigned long ulong_t;
 #elif defined(_MSC_VER)
 #define sw_inline __forceinline
 #else
-#define sw_inline inline
+#define sw_inline inline  // C语言定义了inline函数，告诉编译器把函数代码在编译时直接拷贝到程序中，这样就不用执行时另外读取函数代码
 #endif
 
 #if defined(__GNUC__) && __GNUC__ >= 4
@@ -909,22 +909,23 @@ typedef struct _swFileLock
 typedef struct _swMutex
 {
     pthread_mutex_t _lock;
-    pthread_mutexattr_t attr;
+    pthread_mutexattr_t attr; // 参数attr指定了新建互斥锁的属性
 } swMutex;
-
+//读写锁
 #ifdef HAVE_RWLOCK
 typedef struct _swRWLock
 {
     pthread_rwlock_t _lock;
-    pthread_rwlockattr_t attr;
+    pthread_rwlockattr_t attr;  // atrr 读写锁的相关属性设置
 
 } swRWLock;
 #endif
-
+//自旋锁
 #ifdef HAVE_SPINLOCK
 typedef struct _swSpinLock
 {
-    pthread_spinlock_t lock_t;
+    pthread_spinlock_t lock_t;    //自旋锁类似于互斥锁，不同的是自旋锁在加锁失败的时候，
+                                  //并不会沉入内核，而是空转，这样的锁效率更高，但是会空耗 CPU
 } swSpinLock;
 #endif
 
@@ -939,30 +940,31 @@ typedef struct _swSem
     key_t key;
     int semid;
 } swSem;
-
+// swoole 的锁
 typedef struct _swLock
 {
-	int type;
+	int type;   // type 可以指代这个锁的类型
     union
     {
         swMutex mutex;
 #ifdef HAVE_RWLOCK
-        swRWLock rwlock;
+        swRWLock rwlock; //读写锁
 #endif
 #ifdef HAVE_SPINLOCK
-        swSpinLock spinlock;
+        swSpinLock spinlock; // 文件锁
 #endif
-        swFileLock filelock;
-        swSem sem;
-        swAtomicLock atomlock;
+        swFileLock filelock;  // 文件锁
+        swSem sem;           
+        swAtomicLock atomlock;   //原子锁
     } object;
-
+    /*************锁对应的 回调函数 start********************/
     int (*lock_rd)(struct _swLock *);
     int (*lock)(struct _swLock *);
     int (*unlock)(struct _swLock *);
     int (*trylock_rd)(struct _swLock *);
     int (*trylock)(struct _swLock *);
     int (*free)(struct _swLock *);
+     /*************锁对应的 回调函数 end********************/
 } swLock;
 
 //Thread Condition

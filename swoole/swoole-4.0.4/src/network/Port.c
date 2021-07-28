@@ -544,7 +544,8 @@ static int swPort_onRead_redis(swReactor *reactor, swListenPort *port, swEvent *
 }
 /**
  * @brief EOF 自动分包
- * 
+ *  如果启用了 EOF 自动分包，那么 swoole 会检测 EOF 符号，拼接完毕数据之后再向 worker 发送数据
+    swProtocol_recv_check_eof 用于检测 EOF 符号，如果没有检测到数据就存储到 buffer。
  * @param reactor 
  * @param port 
  * @param event 
