@@ -4,10 +4,6 @@
 #include <unistd.h>
 #include <error.h>
 #include <pthread.h>
-/** 
-    pthread_cond_signal(): 唤醒阻塞在条件变量上的 (至少)一个线程。
-    pthread_cond_broadcast()： 唤醒阻塞在条件变量上的 所有线程。
- * */
 //创建一个全局变量
 struct msg{
      
@@ -60,7 +56,7 @@ void *consumer(void *arg)
          
           struct msg *mp;
           pthread_mutex_lock(&mutex);//加上锁互斥锁
-          if (head == NULL)
+          while (head == NULL)  //多个消费者改成while
           {
               pthread_cond_wait(&has_data, &mutex); //阻塞等待条件变量
           }
@@ -91,6 +87,16 @@ int  main()
      }
      
      ret = pthread_create(&cid,NULL,consumer,NULL);// 消费者
+     if(ret != 0){
+         
+           err_thread(ret,"pthread_create error");
+     }
+      ret = pthread_create(&cid,NULL,consumer,NULL);// 消费者
+     if(ret != 0){
+         
+           err_thread(ret,"pthread_create error");
+     }
+      ret = pthread_create(&cid,NULL,consumer,NULL);// 消费者
      if(ret != 0){
          
            err_thread(ret,"pthread_create error");
