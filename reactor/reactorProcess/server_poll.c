@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 		if (clientfd <= 0) continue;
 
 		pthread_t thread_id;
-		int ret = pthread_create(&thread_id, NULL, client_callback, &clientfd);
+		int ret = (&thread_id, NULL, client_callback, &clientfd);
 		if (ret < 0) {
 			perror("pthread_create");
 			exit(1);

@@ -18,6 +18,11 @@
 #include "buffer.h"
 
 /**
+ * @brief 
+ * 
+ * @param chunk_size 
+ * @return * create* 
+ *swBuffer 的创建很简单，只是初始化整个 swBuffer 的 header 头元素而已
  * create new buffer
  */
 swBuffer* swBuffer_new(int chunk_size)
@@ -37,6 +42,7 @@ swBuffer* swBuffer_new(int chunk_size)
 
 /**
  * create new chunk
+ * 创建一个新的缓冲区快
  */
 swBuffer_chunk *swBuffer_new_chunk(swBuffer *buffer, uint32_t type, uint32_t size)
 {
@@ -80,7 +86,9 @@ swBuffer_chunk *swBuffer_new_chunk(swBuffer *buffer, uint32_t type, uint32_t siz
 }
 
 /**
+ * 
  * pop the head chunk
+ * 获取head之后要删除对应的缓冲区
  */
 void swBuffer_pop_chunk(swBuffer *buffer, swBuffer_chunk *chunk)
 {
@@ -109,7 +117,9 @@ void swBuffer_pop_chunk(swBuffer *buffer, swBuffer_chunk *chunk)
 }
 
 /**
+ * 
  * free buffer
+ * 销毁缓冲区
  */
 int swBuffer_free(swBuffer *buffer)
 {
@@ -130,6 +140,14 @@ int swBuffer_free(swBuffer *buffer)
 }
 
 /**
+ * @brief 
+ * 
+ * @param buffer 
+ * @param data 
+ * @param size 
+ * @return * append 
+ *内存的申请逻辑也很简单，按照传入的 size 参数为链表元素申请内存，
+   初始化成员变量，然后将链表元素放到链表的尾部即可
  * append to buffer queue
  */
 int swBuffer_append(swBuffer *buffer, void *data, uint32_t size)

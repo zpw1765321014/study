@@ -46,15 +46,15 @@ typedef struct _swBuffer_chunk
     uint32_t size;
     void (*destroy)(struct _swBuffer_chunk *chunk);
     struct _swBuffer_chunk *next;
-} swBuffer_chunk;
+} swBuffer_chunk;   // chunk 表示块 大块
 
 typedef struct _swBuffer
 {
     int fd;
     uint8_t chunk_num; //chunk数量
-    uint16_t chunk_size;
+    uint16_t chunk_size; //大小长度
     uint32_t length;
-    swBuffer_chunk *head;
+    swBuffer_chunk *head; //头节点
     swBuffer_chunk *tail;
 } swBuffer;
 
