@@ -535,6 +535,7 @@ void php_swoole_server_before_start(swServer *serv, zval *zobject TSRMLS_DC)
 {
     /**
      * create swoole server
+     * swServer_create 函数主要任务是 swReactorThread_create 创建 reactor 多线程
      */
     if (swServer_create(serv) < 0)
     {
@@ -2771,7 +2772,7 @@ PHP_METHOD(swoole_server, start)
     }
     //-------------------------------------------------------------
     serv->onReceive = php_swoole_onReceive;
-   // server 启动之前的
+   // server 启动之前的  php_swoole_server_before_start 主要调用 swServer_create 函数
     php_swoole_server_before_start(serv, zobject TSRMLS_CC);
    // 服务启动
     ret = swServer_start(serv);

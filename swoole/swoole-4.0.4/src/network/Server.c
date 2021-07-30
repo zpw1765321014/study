@@ -437,10 +437,10 @@ static int swServer_start_proxy(swServer *serv)
     {
         serv->onStart(serv);
     }
-
+    //主线程进入事件循环
     return main_reactor->wait(main_reactor, NULL);
 }
-
+// 本函数将用于监听的 socket 存放到 connection_list 当中，并设置相应的 info 属性；
 void swServer_store_listen_socket(swServer *serv)
 {
     swListenPort *ls;
@@ -489,7 +489,7 @@ void swServer_store_listen_socket(swServer *serv)
         }
     }
 }
-
+//创建  worker 进程的buffer
 swString** swServer_create_worker_buffer(swServer *serv)
 {
     int i;
@@ -653,7 +653,7 @@ int swServer_start(swServer *serv)
 {
     swFactory *factory = &serv->factory;
     int ret;
-
+    // wServer_start_check 函数用于检查各种回调函数已经被正确设置
     ret = swServer_start_check(serv);
     if (ret < 0)
     {
@@ -674,7 +674,7 @@ int swServer_start(swServer *serv)
     {
         swLog_init(SwooleG.log_file);
     }
-    //run as daemon
+    //run as daemon  守护进程启动
     if (serv->daemonize > 0)
     {
         /**
@@ -706,7 +706,7 @@ int swServer_start(swServer *serv)
         }
     }
 
-    //master pid
+    //master pid   记录此时的主进程  id
     serv->gs->master_pid = getpid();
     serv->gs->now = serv->stats->start_time = time(NULL);
 
@@ -816,7 +816,7 @@ int swServer_start(swServer *serv)
     }
     else
     {
-        ret = swServer_start_proxy(serv);
+        ret = swServer_start_proxy(serv); //  开启 reactor 多线程
     }
     swServer_free(serv);
     serv->gs->start = 0;
@@ -877,7 +877,13 @@ void swServer_init(swServer *serv)
 
     SwooleG.serv = serv;
 }
-
+/**
+ * @brief 
+ * 
+ *  创建 reactor 多线程
+ * @param serv 
+ * @return int 
+ */
 int swServer_create(swServer *serv)
 {
     if (SwooleG.main_reactor)

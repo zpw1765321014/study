@@ -85,7 +85,7 @@ static int swFactoryProcess_start(swFactory *factory)
             return SW_ERR;
         }
     }
-
+    //创建管道的个数
     serv->reactor_pipe_num = serv->worker_num / serv->reactor_num;
 
     //必须先启动manager进程组，否则会带线程fork

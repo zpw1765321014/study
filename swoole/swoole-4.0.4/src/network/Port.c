@@ -105,14 +105,14 @@ int swPort_listen(swListenPort *ls)
     int option = 1;
      //printf("listen(%s:%d, %d)\n", ls->host, ls->port, ls->backlog);
     //listen stream socket
-    if (listen(sock, ls->backlog) < 0)
+    if (listen(sock, ls->backlog) < 0)  //监听 socket
     {
         swWarn("listen(%s:%d, %d) failed. Error: %s[%d]", ls->host, ls->port, ls->backlog, strerror(errno), errno);
         return SW_ERR;
     }
 
 #ifdef TCP_DEFER_ACCEPT
-    if (ls->tcp_defer_accept)
+    if (ls->tcp_defer_accept)  //  tcp_defer_accept ：当一个TCP连接有数据发送时才触发 accept 
     {
         if (setsockopt(sock, IPPROTO_TCP, TCP_DEFER_ACCEPT, (const void*) &ls->tcp_defer_accept, sizeof(int)) < 0)
         {

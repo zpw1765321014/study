@@ -470,7 +470,7 @@ typedef struct
     } addr;
     socklen_t len;
 } swSocketAddress;
-
+// swoole server 连接对象
 typedef struct _swConnection
 {
     /**

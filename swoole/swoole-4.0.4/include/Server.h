@@ -123,21 +123,21 @@ typedef struct _swUdpFd
     struct sockaddr addr;
     int sock;
 } swUdpFd;
-
+//reactor  线程结构体
 typedef struct _swReactorThread
 {
-    pthread_t thread_id;
-    swReactor reactor;
+    pthread_t thread_id; //对应的线程id
+    swReactor reactor;   //对应的reactor结构体
     swUdpFd *udp_addrs;
     swMemoryPool *buffer_input;
 #ifdef SW_USE_RINGBUFFER
     int *pipe_read_list;
 #endif
-    swLock lock;
+    swLock lock;       //对应的锁
     int notify_pipe;
 } swReactorThread;
 
-typedef struct _swListenPort
+typedef struct _swListenPort  //listenport 结构体
 {
     struct _swListenPort *next, *prev;
 

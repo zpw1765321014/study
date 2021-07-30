@@ -1118,12 +1118,15 @@ static int swReactorThread_onWrite(swReactor *reactor, swEvent *ev)
     }
     return SW_OK;
 }
-
+/********
+ * swReactorThread_create 创建线程池对象
+ * 
+ * */
 int swReactorThread_create(swServer *serv)
 {
     int ret = 0;
     /**
-     * init reactor thread pool
+     * init reactor thread pool  申请内存
      */
     serv->reactor_threads = SwooleG.memory_pool->alloc(SwooleG.memory_pool, (serv->reactor_num * sizeof(swReactorThread)));
     if (serv->reactor_threads == NULL)
@@ -1135,7 +1138,7 @@ int swReactorThread_create(swServer *serv)
     /**
      * alloc the memory for connection_list
      */
-    if (serv->factory_mode == SW_MODE_PROCESS)
+    if (serv->factory_mode == SW_MODE_PROCESS)  // process 模式
     {
         serv->connection_list = sw_shm_calloc(serv->max_connection, sizeof(swConnection));
     }
@@ -1194,7 +1197,7 @@ int swReactorThread_start(swServer *serv, swReactor *main_reactor_ptr)
     swReactorThread *thread;
     pthread_t pidt;
     int i;
-
+    // swServer_store_listen_socket 函数用于将监控的 socket 存放于 connection_list 中
     swServer_store_listen_socket(serv);
 
 #ifdef HAVE_REUSEPORT
@@ -1208,6 +1211,7 @@ int swReactorThread_start(swServer *serv, swReactor *main_reactor_ptr)
         {
             continue;
         }
+        // 向 main_reactor 中添加监听的 socket 文件描述符
         main_reactor_ptr->add(main_reactor_ptr, ls->sock, SW_FD_LISTEN);
     }
 

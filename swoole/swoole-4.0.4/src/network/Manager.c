@@ -36,7 +36,7 @@ static void swManager_check_exit_status(swServer *serv, int worker_id, pid_t pid
 
 static swManagerProcess ManagerProcess;
 
-//create worker child proccess
+//create worker child proccess  主进程启动  并且创建worker 进程
 int swManager_start(swFactory *factory)
 {
     swFactoryProcess *object = factory->object;
@@ -499,14 +499,14 @@ static pid_t swManager_spawn_worker(swFactory *factory, int worker_id)
     }
     //worker child processor
     else if (pid == 0)
-    {
+    {   //worker 进程进入事件循环
         ret = swWorker_loop(factory, worker_id); //子进程进入事件循环
         exit(ret);
     }
     //parent,add to writer
     else
     {
-        return pid;
+        return pid;  // 父进程 
     }
 }
 //信号
