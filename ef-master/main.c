@@ -104,7 +104,7 @@ void signal_handler(int num)
 {
     efr.stopping = 1;
 }
-
+//主函数
 int main(int argc, char *argv[])
 {
     if (ef_init(&efr, 64 * 1024, 256, 512, 1000 * 60, 16) < 0) {
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
     sa.sa_handler = signal_handler;
     sigaction(SIGHUP, &sa, NULL);
     sigaction(SIGINT, &sa, NULL);
-
+    // socket 
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sockfd < 0)
     {
@@ -124,11 +124,13 @@ int main(int argc, char *argv[])
     struct sockaddr_in addr_in = {0};
     addr_in.sin_family = AF_INET;
     addr_in.sin_port = htons(8080);
+    //bind
     int retval = bind(sockfd, (const struct sockaddr *)&addr_in, sizeof(addr_in));
     if(retval < 0)
     {
         return -1;
     }
+    //listen
     listen(sockfd, 512);
     ef_add_listen(&efr, sockfd, forward_proc);
 
