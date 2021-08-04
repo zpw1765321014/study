@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
     if (ef_init(&efr, 64 * 1024, 256, 512, 1000 * 60, 16) < 0) {
         return -1;
     }
-
+    /*sigaction函数的功能是检查或修改与指定信号相关联的处理动作*/
     struct sigaction sa = {0};
     sa.sa_handler = signal_handler;
     sigaction(SIGHUP, &sa, NULL);
