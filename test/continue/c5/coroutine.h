@@ -11,19 +11,19 @@
 #include<arpa/inet.h>
 #include<fcntl.h>
 
-#define  CORSE 1024
+#define  CORSZ 1024
 #define  STACKSZ 2014 * 64
 
 //标记协成运行的状态
-enum  States
+enum States
 {
-    DEAD,     //死亡
-    REDAY,     //就绪
-    RUNING,    //运行
-    SUSPEND    //阻塞
-}
+    DEAD,       //死亡
+    READY,      //就绪
+    RUNNING,    //运行
+    SUSPEND     //阻塞
+};
 
-struct schedule ;
+struct schedule;
 
 //协成结构体
 typedef struct coroutine
@@ -33,7 +33,7 @@ typedef struct coroutine
     //回调函数参数
     void *argc;
     //协成上下文
-    ucontext ctx;
+    ucontext_t ctx;
     //协成栈
     char stack[STACKSZ];
     //协成状态
@@ -43,9 +43,9 @@ typedef struct coroutine
 //协成管理器
 typedef struct schedule
 {
-     coroutine_t **coroutine;  //所以协成
+     coroutine_t **coroutines;  //所以协成
      int current_id;            //当前协成id 如果没有运行的协成则设置为 -1
-     ucontext ctx_mian;        //主协成的上下文环境
+     ucontext_t ctx_main;        //主协成的上下文环境
      int max_id;               //最大下表
 }schedule_t;
 
@@ -70,4 +70,4 @@ void schedule_destroy(schedule_t *s);
 //判断协成是否运行完成
 int schedule_finished(schedule_t* s);
 
-#endif;
+#endif /*__COROUTINE_H__*/
