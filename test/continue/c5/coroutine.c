@@ -90,7 +90,7 @@ void coroutine_running(schedule_t* s, int id)
     swapcontext(&s->ctx_main,&c->ctx);//保存主线程的上下文信息，切换到当前协程保存的上下文
 }
 
-//  协成让出 让出CPU
+//  协成让出 让出CPU 也就是切换到主进程
 void coroutine_yield(schedule_t* s)
 {
     printf("coroutine_yield\n");
@@ -104,7 +104,7 @@ void coroutine_yield(schedule_t* s)
         swapcontext(&c->ctx,&s->ctx_main);//保存当前协程的上下文信息，切换到主函数上下文运行
     }
 }
-//还原CPU 根据协成执行的 原来的信息执行对应的协成
+//还原CPU 根据协成执行的 原来的信息执行对应的协成 恢复对应的上下文
 void coroutine_resume(schedule_t* s,int id)
 {
     printf("coroutine_resume\n");

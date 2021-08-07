@@ -15,7 +15,8 @@
   改造ucp上下文信息，下一步执行func，func执行完毕之后执行 link之后的函数
 
   int swapcontext(ucontext_t *oucp, ucontext_t *ucp)
-  将oucp寄存器信息保存起来，将ucp的寄存器信息加载到CPU中
+  将oucp寄存器信息保存起来，将ucp的寄存器信息加载到CPU中  也就是寄存器中指令加载到cpu中去
+  然后cpu 取址执行 当前的协成就可以恢复起来执行了
 
 */
 //获取监听描述符
@@ -71,6 +72,7 @@ void accept_conn(int lfd,schedule_t* s, int co_ids[], void*(*call_back)(schedule
         {
             set_nonblock(cfd);//设置为非阻塞
             int argc[] = {lfd,cfd};
+            //来一个连接创建一个协成去处理
             int id = coroutine_create(s,call_back,argc);//创建协程，并且设置好上下文等信息
             int i=0;
             for (i=0 ;i<CORSZ; ++i)
@@ -81,13 +83,14 @@ void accept_conn(int lfd,schedule_t* s, int co_ids[], void*(*call_back)(schedule
                     break;
                 }
             }
+            //连接数过大
             if (i == CORSZ)
             {
                 printf("连接太多\n");
             }
             printf("accept_conn -> coroutine_running\n");
             //启动协程
-            coroutine_running(s,id);
+            coroutine_running(s,id);  //启动协成处理对应的业务逻辑
         }
         else 
         {
@@ -117,7 +120,7 @@ void* handle(schedule_t* s, void* argc)
     int cfd = arr[1];
     while (1)
     {
-        sleep(3);
+        sleep(1);
         printf("handle while\n");
         memset(buf, 0x00, sizeof(buf));
         int r = read(cfd, buf, 1024);
