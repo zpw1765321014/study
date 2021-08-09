@@ -186,7 +186,9 @@ typedef struct _swThreadParam
 	void *object;
 	int pti;
 } swThreadParam;
-
+/**
+  /管道结构体属性
+**/
 typedef struct _swPipe
 {
 	void *object;
