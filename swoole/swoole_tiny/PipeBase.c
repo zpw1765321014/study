@@ -1,4 +1,5 @@
 #include "./include/swoole.h"
+#include "./include/Server.h"
 
 //读函数
 int swPipeBase_read(swPipe *p,void *data,int length);
@@ -54,6 +55,27 @@ int swPipeBase_read(swPipe *p,void *data,int length)
 {
     swPipeBase *this = p->object;
     return read(this->pipes[0],data,length);
+}
+
+//从管道中写数据
+int swPipeBase_write(swPipe *p,void *data,int length)
+{
+   swPipeBase *this = p->object;
+   return write(this->pipes[1],data,length);
+}
+//获取管道的fd
+int swPipeBase_getFd(swPipe *p,int isWriteFd)
+{    
+    swPipeBase *this = p->object;
+    return (isWriteFd == 0) ? this->pipes[0] : this->pipes[1];
+}
+
+//关闭 管道
+void swPipeBase_close(swPipe *p)
+{
+    swPipeBase *this = p->object;
+	close(this->pipes[0]);
+	close(this->pipes[1]);
 }
 
 

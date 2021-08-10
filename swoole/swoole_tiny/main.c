@@ -13,7 +13,8 @@ void init_main();
 /*****初始化回调函数 start*****/
 int main()
 {      
-       printf("server create start.....\n");
+       //printf("server create start.....\n");
+       //服务初始化
        init_main();
 
        return 0;
@@ -21,7 +22,7 @@ int main()
 
 void init_main()
 {
-    swServer serv;
+      swServer serv;
 
 	   int ret;
       //服务初始化
@@ -47,8 +48,21 @@ void init_main()
 
 
       //创建server
-
+      //create Server
+	ret = swServer_create(&serv);
+	if (ret < 0)
+	{
+		swTrace("create server fail[error=%d].\n", ret);
+		exit(0);
+	}
       //启动server
+	ret = swServer_start(&serv);
+	if (ret < 0)
+	{
+		swTrace("start server fail[error=%d].\n", ret);
+		exit(0);
+	}
+
 }
 
 void my_onTimer(swServer *serv, int interval)
