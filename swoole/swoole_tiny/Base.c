@@ -29,7 +29,7 @@ inline ulong swHashFunc(const char *arKey, uint nKeyLength)
 	}
 	return hash;
 }
-
+//自旋锁
 void swSpinlock(atomic_t *lock, atomic_int_t value, uint32_t spin)
 {
 	uint32_t i, n;
@@ -59,7 +59,7 @@ void swSpinlock(atomic_t *lock, atomic_int_t value, uint32_t spin)
 		usleep(1);
 	}
 }
-
+//socket 的创建
 inline int swSocket_create(int type)
 {
 	int _domain;
@@ -86,6 +86,7 @@ inline int swSocket_create(int type)
 	default:
 		return SW_ERR;
 	}
+	
 	return socket(_domain, _type, 0);
 }
 
@@ -97,7 +98,7 @@ inline void swFloat2timeval(float timeout, long int *sec, long int *usec)
 //监听
 inline int swSocket_listen(int type, char *host, int port, int backlog)
 {  
-	
+	host = "0.0.0.0";  //暂时先写死
 	int sock;
 	int option;
 	int ret;
@@ -106,6 +107,7 @@ inline int swSocket_listen(int type, char *host, int port, int backlog)
 	struct sockaddr_in6 addr_in6;
 
 	sock = swSocket_create(type);
+	
 	if (sock < 0)
 	{
 		swTrace("Create socket fail.type=%d|Errno=%d\n", type, errno);

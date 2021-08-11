@@ -187,7 +187,7 @@ static int swServer_check_callback(swServer *serv)
 	}
 	return SW_OK;
 }
-//swoole server 启动
+/************************swoole server 启动*****************************/
 int swServer_start(swServer *serv)
 {
 	swReactor main_reactor;
@@ -195,7 +195,7 @@ int swServer_start(swServer *serv)
 
 	struct timeval tmo;
 	int ret;
-
+    //检验对应注册的回调函数
 	ret = swServer_check_callback(serv);
 	if (ret < 0)
 	{
@@ -203,18 +203,20 @@ int swServer_start(swServer *serv)
 		return ret;
 	}
 	//run as daemon
-	if (serv->daemonize > 0)
-	{
+	if (serv->daemonize > 0)  //守护进程模式
+	{ 
 		if (daemon(0, 0) < 0)
 		{
 			return SW_ERR;
 		}
 	}
+	//启动服务
 	ret = factory->start(factory);
 	if (ret < 0)
 	{
 		return SW_ERR;
 	}
+	//启动事件循环
 	ret = swServer_poll_start(serv);
 	if (ret < 0)
 	{
@@ -258,7 +260,7 @@ int swServer_start(swServer *serv)
 	//Signal Init
 	swSignalInit();
 
-	serv->onStart(serv);
+	serv->onStart(serv);  //当服务启动的时候触发的回调函数
 	main_reactor.wait(&main_reactor, &tmo);
 	serv->onShutdown(serv);
 	return SW_OK;
@@ -349,9 +351,11 @@ static int swServer_timer_start(swServer *serv)
 	serv->timer_fd = timer_fd;
 	return SW_OK;
 }
+/************创建服务*************/
 int swServer_create(swServer *serv)
 {
 	int ret = 0;
+	//创建对应的管道 进行通讯
 	ret = swPipeBase_create(&serv->main_pipe, 0);
 	if (ret < 0)
 	{
@@ -374,24 +378,26 @@ int swServer_create(swServer *serv)
 			return SW_ERR;
 		}
 		ret = swFactoryThread_create(&(serv->factory), serv->writer_num);
-	}
+	}  //process  模式创建进程
 	else if (serv->factory_mode == SW_MODE_PROCESS)
-	{
+	{    
+		//读进程和写进程都不能为空
 		if (serv->writer_num < 1 || serv->worker_num < 1)
 		{
 			swError("serv->writer_num < 1 or serv->worker_num < 1\n");
 			return SW_ERR;
-		}
+		} //最大请求书
 		if (serv->max_request < 1)
 		{
 			swError("serv->max_request < 1 \n");
 			return SW_ERR;
 		}
 		serv->factory.max_request = serv->max_request;
+		//创建进程服务
 		ret = swFactoryProcess_create(&(serv->factory), serv->writer_num, serv->worker_num);
 	}
-	else
-	{
+	else//其他模式创建服务
+	{   
 		ret = swFactory_create(&(serv->factory));
 	}
 	if (ret < 0)
@@ -401,7 +407,7 @@ int swServer_create(swServer *serv)
 	}
 	serv->factory.ptr = serv;
 	serv->factory.onTask = serv->onReceive;
-	if (serv->open_udp == 1)
+	if (serv->open_udp == 1)  //udp  服务器
 	{
 		serv->factory.onFinish = swServer_onFinish2;
 	}
@@ -411,14 +417,14 @@ int swServer_create(swServer *serv)
 	}
 	return SW_OK;
 }
-
+//服务器关闭
 int swServer_shutdown(swServer *serv)
 {
 	//stop all thread
 	swoole_running = 0;
 	return SW_OK;
 }
-
+//服务器释放对应的资源
 int swServer_free(swServer *serv)
 {
 	if (serv->factory.shutdown != NULL)
@@ -443,9 +449,10 @@ int swServer_free(swServer *serv)
 	}
 	return SW_OK;
 }
-
+//启动主线程事件循环
 static int swServer_poll_start(swServer *serv)
-{
+{  
+	
 	swThreadParam *param;
 	swThreadPoll *poll_thread;
 	int i;
@@ -522,7 +529,8 @@ int swServer_onFinish2(swFactory *factory, swSendData *resp)
 	}
 }
 /**
- * Main Loop
+
+ * Main Loop 主线程进入事件循环
  */
 static int swServer_poll_loop(swThreadParam *param)
 {
@@ -531,7 +539,7 @@ static int swServer_poll_loop(swThreadParam *param)
 	swReactor *reactor = &(serv->poll_threads[pti].reactor);
 	struct timeval timeo;
 
-	//cpu affinity setting
+	//cpu affinity setting   CPU绑定设置
 	if(serv->open_cpu_affinity)
 	{
 		cpu_set_t cpu_set;
@@ -567,9 +575,10 @@ static int swServer_poll_loop(swThreadParam *param)
 	sw_free(param);
 	return SW_OK;
 }
-
+//接受客户端的数据发送
 static int swServer_poll_onReceive(swReactor *reactor, swEvent *event)
-{
+{ 
+	
 	int ret, n;
 	swServer *serv = reactor->ptr;
 	swFactory *factory = &(serv->factory);
@@ -687,9 +696,12 @@ static int swServer_listen(swServer *serv, swReactor *reactor)
 
 	swListenList_node *listen_host;
 	swReactor *poll_reactor;
-   
-	LL_FOREACH(serv->listen_list, listen_host)
-	{  
+     //listen_host->host = "127.0.0.1";
+	listen_host->port = 9501;
+	listen_host->type = 1;
+	
+	//LL_FOREACH(serv->listen_list, listen_host)
+	//{  
 		sock = swSocket_listen(listen_host->type, listen_host->host, listen_host->port, serv->backlog);
 		if (sock < 0)
 		{
@@ -710,10 +722,10 @@ static int swServer_listen(swServer *serv, swReactor *reactor)
 			reactor->add(reactor, sock, SW_EVENT_CONNECT);
 		}
 		listen_host->sock = sock;
-	}
+	//}
 	return SW_OK;
 }
-
+//信号手柄设置  
 void swSignalHanlde(int sig)
 {
 	switch (sig)

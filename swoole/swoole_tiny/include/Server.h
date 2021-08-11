@@ -9,20 +9,20 @@
 
 #define SW_HOST_MAXSIZE          48
 #define SW_MAX_TMP_PKG           1000
-
+//udp fd
 typedef struct _swUdpFd{
 	struct sockaddr addr;
 	int sock;
 } swUdpFd;
-
-typedef struct _swThreadPoll
+//线程池
+typedef struct _swThreadPoll   
 {
 	pthread_t ptid; //线程ID
 	swReactor reactor;
 	swUdpFd *udp_addrs;
 	int c_udp_fd;
 } swThreadPoll;
-
+//监听者节点
 typedef struct _swListenList_node
 {
 	struct _swListenList_node *next, *prev;
@@ -40,6 +40,7 @@ typedef struct _swTimerList_node
 } swTimerList_node;
 
 typedef struct swServer_s swServer;
+// swoole server 结构体
 struct swServer_s
 {
 	int backlog;
@@ -67,33 +68,33 @@ struct swServer_s
 	char open_cpu_affinity; //是否设置CPU亲和性
 	char open_tcp_nodelay;  //是否关闭Nagle算法
 
-	swPipe main_pipe;
-	swReactor reactor;
-	swFactory factory;
-	swThreadPoll *poll_threads;
+	swPipe main_pipe;         //管道
+	swReactor reactor;        // reactor 
+	swFactory factory;       
+	swThreadPoll *poll_threads;   //线程池
 	swListenList_node *listen_list;
 	swTimerList_node *timer_list;
 
 	void *ptr; //reserve
 	void *ptr2; //reserve
 
-	void (*onStart)(swServer *serv);
-	int (*onReceive)(swFactory *factory, swEventData *data);
-	void (*onClose)(swServer *serv, int fd, int from_id);
-	void (*onConnect)(swServer *serv, int fd, int from_id);
-	void (*onShutdown)(swServer *serv);
+	void (*onStart)(swServer *serv);  //服务启动
+	int (*onReceive)(swFactory *factory, swEventData *data);//接受数据
+	void (*onClose)(swServer *serv, int fd, int from_id);  //客户端关闭
+	void (*onConnect)(swServer *serv, int fd, int from_id); //客户端连接
+	void (*onShutdown)(swServer *serv);                    //服务器关闭停止时
 	void (*onTimer)(swServer *serv, int interval);
 };
-int swServer_onFinish(swFactory *factory, swSendData *resp);
+int swServer_onFinish(swFactory *factory, swSendData *resp); //完成
 int swServer_onFinish2(swFactory *factory, swSendData *resp);
-int swServer_onClose(swReactor *reactor, swEvent *event);
-int swServer_onAccept(swReactor *reactor, swEvent *event);
+int swServer_onClose(swReactor *reactor, swEvent *event);  //客户端关闭
+int swServer_onAccept(swReactor *reactor, swEvent *event);  //接受客户端连接
 
-void swServer_init(swServer *serv);
-int swServer_start(swServer *serv);
-int swServer_addListen(swServer *serv, int type, char *host,int port);
-int swServer_create(swServer *serv);
-int swServer_free(swServer *serv);
+void swServer_init(swServer *serv);   //服务器初始化
+int swServer_start(swServer *serv);   //服务器启动
+int swServer_addListen(swServer *serv, int type, char *host,int port); //添加监听者进程
+int swServer_create(swServer *serv); // 创建服务
+int swServer_free(swServer *serv);   // 释放服务
 int swServer_close(swServer *factory, swEvent *event);
 int swServer_shutdown(swServer *serv);
 int swServer_addTimer(swServer *serv, int interval);

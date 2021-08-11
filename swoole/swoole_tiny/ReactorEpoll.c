@@ -134,10 +134,13 @@ int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
 			continue;
 		}
 		for (i = 0; i < n; i++)
-		{
+		{  
+			
+			//printf("event coming.Ep=%d|fd=%d\n", this->epfd, this->events[i].data.fd);
 			if (this->events[i].events & EPOLLIN)
 			{
 				swTrace("event coming.Ep=%d|fd=%d\n", this->epfd, this->events[i].data.fd);
+
 				memcpy(&fd_, &(this->events[i].data.u64), sizeof(fd_));
 				ev.fd = fd_.fd;
 				ev.from_id = reactor->id;

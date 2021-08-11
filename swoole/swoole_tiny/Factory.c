@@ -10,7 +10,8 @@ int swFactory_create(swFactory *factory)
 	return SW_OK;
 }
 int swFactory_start(swFactory *factory)
-{
+{  
+	
 	return SW_OK;
 }
 

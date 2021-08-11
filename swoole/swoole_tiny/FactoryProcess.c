@@ -2,14 +2,14 @@
 #include "./include/Server.h"
 #include <signal.h>
 #include <sys/wait.h>
-
+//进程 结构体
 typedef struct _swWorkerChild
 {
-	pid_t pid;
-	int pipe_fd;
-	int writer_id;
+	pid_t pid;             //进程id 
+	int pipe_fd;           //管道fd
+	int writer_id;         //写进程id
 } swWorkerChild;
-
+//创建进程 结构体
 typedef struct _swFactoryProcess
 {
 	swThreadWriter *writers;
@@ -20,7 +20,7 @@ typedef struct _swFactoryProcess
 	int writer_pti; //current writer id
 	int worker_pti; //current worker id
 } swFactoryProcess;
-
+//管道  sw
 typedef struct _swPipes{
 	int pipes[2];
 } swPipes;
@@ -174,7 +174,7 @@ static int swFactoryProcess_worker_start(swFactory *factory)
 	}
 	return SW_OK;
 }
-
+//管理进程进入事件循环
 static int swFactoryProcess_manager_loop(swFactory *factory)
 {
 	int pid, new_pid;

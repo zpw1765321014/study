@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "./include/swoole.h"
 #include "./include/RingMempool.h"
-
+//内存池的初始化
 inline int swRingMempool_init(swRingMempool *pool, void *mem, int size)
 {
 	pool->size = size;
@@ -10,8 +10,10 @@ inline int swRingMempool_init(swRingMempool *pool, void *mem, int size)
 	pool->tail = 0;
 	return 0;
 }
+//内存池的申请
 void* swRingMempool_alloc(swRingMempool *pool, int size)
-{
+{   
+	printf("poll size is %d\n",size);
 	swRingMempool_head *item;
 	//超过最大尺寸
 	if(size > SWRINGMEM_ITEM_MAXSIZE)
@@ -41,7 +43,7 @@ void* swRingMempool_alloc(swRingMempool *pool, int size)
 	item->length = size;
 	return (void *) (item + sizeof(swRingMempool_head));
 }
-
+//内存池的释放
 inline void swRingMempool_free(swRingMempool *pool, void *ptr)
 {
 	//翻转
@@ -52,7 +54,7 @@ inline void swRingMempool_free(swRingMempool *pool, void *ptr)
 	}
 	pool->head += (((swRingMempool_head *)ptr)->length + sizeof(swRingMempool_head));
 }
-
+//内存池大小从新设置
 inline void swRingMempool_resize(swRingMempool *pool, void *ptr, int size)
 {
 	swRingMempool_head *item = ptr;

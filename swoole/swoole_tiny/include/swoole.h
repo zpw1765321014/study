@@ -110,7 +110,7 @@
 #define SW_MAX_FDTYPE          32 //32 kinds of event
 #define SW_ERROR_MSG_SIZE      256
 #define SW_MAX_REQUEST         10000
-
+//事件数据结构体
 typedef struct _swEventData
 {
 	int fd;
@@ -118,15 +118,15 @@ typedef struct _swEventData
 	int from_id; //Reactor Id
 	char data[SW_BUFFER_SIZE];
 } swEventData;
-
+//发送数据结构体
 typedef struct _swSendData
 {
 	int fd;
 	int len;
 	int from_id;
 	char *data;
-} swSendData;
-
+} swSendData; 
+//事件结构体
 typedef struct _swEvent
 {
 	int from_id; //Reactor Id
@@ -158,11 +158,11 @@ typedef struct _swHashTable_FdInfo
 
 typedef int (*swHandle)(swEventData *buf);
 typedef void (*swSignalFunc)(int);
-typedef void (*swCallback)(void *);
+typedef void (*swCallback)(void *); //回调函数
 typedef struct swReactor_s swReactor;
 typedef int (*swReactor_handle)(swReactor *reactor, swEvent *event);
-
-typedef struct _swFactory
+//进程结构体
+typedef struct _swFactory 
 {
 	void *object;
 	int id; //Factory ID
@@ -172,10 +172,10 @@ typedef struct _swFactory
 	int last_from_id;
 	swReactor *reactor; //reserve for reactor
 
-	int (*start)(struct _swFactory *);
-	int (*shutdown)(struct _swFactory *);
-	int (*dispatch)(struct _swFactory *, swEventData *);
-	int (*finish)(struct _swFactory *, swSendData *);
+	int (*start)(struct _swFactory *);   //进程启动
+	int (*shutdown)(struct _swFactory *);  //进程关闭
+	int (*dispatch)(struct _swFactory *, swEventData *); //进程分发
+	int (*finish)(struct _swFactory *, swSendData *);   //完成
 
 	int (*onTask)(struct _swFactory *, swEventData *task); //worker function.get a task,goto to work
 	int (*onFinish)(struct _swFactory *, swSendData *result); //factory worker finish.callback
@@ -198,7 +198,7 @@ typedef struct _swPipe
 	int (*getFd)(struct _swPipe *, int isWriteFd);
 	void (*close)(struct _swPipe *);
 } swPipe;
-
+//reactor 线程 结构体
 struct swReactor_s
 {
 	void *object;
@@ -209,11 +209,11 @@ struct swReactor_s
 	swReactor_handle handle[SW_MAX_FDTYPE];
 	swFactory *factory;
 
-	int (*add)(swReactor *, int, int);
-	int (*del)(swReactor *, int);
-	int (*wait)(swReactor *, struct timeval *);
-	void (*free)(swReactor *);
-	int (*setHandle)(swReactor *, int, swReactor_handle);
+	int (*add)(swReactor *, int, int);    //添加
+	int (*del)(swReactor *, int);         // 删除
+	int (*wait)(swReactor *, struct timeval *); // 等待
+	void (*free)(swReactor *);  //释放
+	int (*setHandle)(swReactor *, int, swReactor_handle); //设置手柄
 };
 
 typedef struct _swThreadWriter

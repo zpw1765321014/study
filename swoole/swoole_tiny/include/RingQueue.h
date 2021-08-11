@@ -16,10 +16,10 @@ typedef struct _swRingQueue
 
 } swRingQueue;
 
-int swRingQueue_init(swRingQueue *, int buffer_size);
-#define swRingQueue_count(q) (q->num)
-int swRingQueue_push(swRingQueue *, void *);
-int swRingQueue_pop(swRingQueue *, void **);
+int swRingQueue_init(swRingQueue *, int buffer_size); //初始化
+#define swRingQueue_count(q) (q->num)        
+int swRingQueue_push(swRingQueue *, void *);          //入队列
+int swRingQueue_pop(swRingQueue *, void **);          //出队列
 #else
 typedef struct _swRingQueue
 {

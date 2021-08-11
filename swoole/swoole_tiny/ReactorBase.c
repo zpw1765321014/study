@@ -1,7 +1,9 @@
 #include "./include/swoole.h"
 
+//接受客户端连接
 int swReactor_accept(swReactor *reactor, swEvent *event)
-{
+{  
+
 	swEventConnect conn_ev;
 	conn_ev.from_id = event->from_id;
 	conn_ev.serv_fd = event->fd;
@@ -18,7 +20,7 @@ int swReactor_accept(swReactor *reactor, swEvent *event)
 	reactor->add(reactor, conn_ev.conn_fd, SW_FD_TCP);
 	return conn_ev.conn_fd;
 }
-
+// server  出现错误
 inline int swReactor_error(swReactor *reactor)
 {
 	switch (errno)
@@ -28,7 +30,7 @@ inline int swReactor_error(swReactor *reactor)
 	}
 	return SW_ERR;
 }
-
+//客户端关闭连接
 int swReactor_close(swReactor *reactor, swEvent *event)
 {
 	//swEventClose close_ev;
@@ -36,10 +38,10 @@ int swReactor_close(swReactor *reactor, swEvent *event)
 	//close_ev.from_id = event->fd;
 
 	close(event->fd);
-	reactor->del(reactor, event->fd);
+	reactor->del(reactor, event->fd);// 从reactor 也就是红黑树中 删除对应的fd
 	return 0;
 }
-
+//设置回调函数
 int swReactor_setHandle(swReactor *reactor, int fdtype, swReactor_handle handle)
 {
 	if (fdtype >= SW_MAX_FDTYPE)
@@ -52,7 +54,7 @@ int swReactor_setHandle(swReactor *reactor, int fdtype, swReactor_handle handle)
 		return 0;
 	}
 }
-
+//接受客户端发送的数据
 int swReactor_receive(swReactor *reactor, swEvent *event)
 {
 	swEventData data;

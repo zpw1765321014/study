@@ -19,7 +19,7 @@ int main()
 
        return 0;
 }
-
+//初始话并且执行对应的回调函数
 void init_main()
 {
       swServer serv;
@@ -32,8 +32,8 @@ void init_main()
 	  serv.backlog = 128;
 	  serv.poll_thread_num = 1;
 	  serv.writer_num = 1;
-	  serv.worker_num = 1;
-	  serv.factory_mode = 2;
+	  serv.worker_num = 4;
+	  serv.factory_mode = 3;
 	  serv.open_cpu_affinity = 1;
 	  serv.open_tcp_nodelay = 1;
 	  //serv.daemonize = 1;
@@ -101,7 +101,7 @@ int my_onReceive(swFactory *factory, swEventData *req)
 	swTrace("finish\n");
 	return SW_OK;
 }
-
+//进程启动的时候
 void my_onStart(swServer *serv)
 {
 	printf("Server is running\n");
@@ -121,3 +121,4 @@ void my_onClose(swServer *serv, int fd, int from_id)
 {
 	printf("Close fd=%d|from_id=%d\n", fd, from_id);
 }
+//ps aux | grep swoole |  awk '{print $2}' | xargs kill -9 杀死所有对应的进程
