@@ -133,13 +133,13 @@ typedef struct _swEvent
 	int fd;
 	int type;
 } swEvent;
-
+//关闭实践结构体
 typedef struct _swEventClose
 {
 	int from_id; //Reactor Id
 	int fd;
 } swEventClose;
-
+//连接事件截水沟头
 typedef struct _swEventConnect
 {
 	int from_id; //Reactor Id
@@ -148,7 +148,7 @@ typedef struct _swEventConnect
 	struct sockaddr_in addr;
 	socklen_t addrlen;
 } swEventConnect;
-
+//hanshtable 详情
 typedef struct _swHashTable_FdInfo
 {
 	int fd;
@@ -198,7 +198,7 @@ typedef struct _swPipe
 	int (*getFd)(struct _swPipe *, int isWriteFd);
 	void (*close)(struct _swPipe *);
 } swPipe;
-//reactor 线程 结构体
+//reactor  结构体
 struct swReactor_s
 {
 	void *object;
@@ -215,7 +215,7 @@ struct swReactor_s
 	void (*free)(swReactor *);  //释放
 	int (*setHandle)(swReactor *, int, swReactor_handle); //设置手柄
 };
-
+//写线程
 typedef struct _swThreadWriter
 {
 	pthread_t ptid; //线程ID

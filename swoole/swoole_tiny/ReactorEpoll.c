@@ -19,9 +19,12 @@ struct swReactorEpoll_s
 	int event_max;
 	struct epoll_event *events;
 };
-
+/**
+  reactor  的创建
+*/
 int swReactorEpoll_create(swReactor *reactor, int max_event_num)
-{
+{  
+	
 	//create reactor object
 	swReactorEpoll *reactor_object = sw_malloc(sizeof(swReactorEpoll));
 	if (reactor_object == NULL)
@@ -46,14 +49,15 @@ int swReactorEpoll_create(swReactor *reactor, int max_event_num)
 		return SW_ERR;
 	}
 	//binding method
+	/*绑定对应的操作时间 添加 删除 等待返回 */
 	reactor->add = swReactorEpoll_add;
 	reactor->del = swReactorEpoll_del;
 	reactor->wait = swReactorEpoll_wait;
 	reactor->free = swReactorEpoll_free;
-	reactor->setHandle = swReactor_setHandle;
+	reactor->setHandle = swReactor_setHandle; // 对应的处理函数 也就是回调函数
 	return SW_OK;
 }
-
+//释放reactor
 void swReactorEpoll_free(swReactor *reactor)
 {
 	swReactorEpoll *this = reactor->object;
@@ -61,7 +65,7 @@ void swReactorEpoll_free(swReactor *reactor)
 	sw_free(this->events);
 	sw_free(this);
 }
-
+//reactor 添加对应的fd
 int swReactorEpoll_add(swReactor *reactor, int fd, int fdtype)
 {
 	swReactorEpoll *this = reactor->object;
@@ -78,6 +82,7 @@ int swReactorEpoll_add(swReactor *reactor, int fd, int fdtype)
 	memcpy(&(e.data.u64), &fd_, sizeof(fd_));
 
 	swTrace("[THREAD #%ld]EP=%d|FD=%d\n", pthread_self(), this->epfd, fd);
+	//把当前的fd添加到对应的 红黑树种
 	ret = epoll_ctl(this->epfd, EPOLL_CTL_ADD, fd, &e);
 	if (ret < 0)
 	{
@@ -87,7 +92,7 @@ int swReactorEpoll_add(swReactor *reactor, int fd, int fdtype)
 	this->event_max++;
 	return SW_OK;
 }
-
+//清除掉对应的当前fd
 int swReactorEpoll_del(swReactor *reactor, int fd)
 {
 	swReactorEpoll *this = reactor->object;
@@ -97,6 +102,7 @@ int swReactorEpoll_del(swReactor *reactor, int fd)
 	//e.data.u64 = 0;
 	//e.events = EPOLLIN | EPOLLOUT;
 	e.events = EPOLLIN | EPOLLET;
+	//删除掉对应的节点
 	ret = epoll_ctl(this->epfd, EPOLL_CTL_DEL, fd, &e);
 	if (ret < 0)
 	{
@@ -105,19 +111,20 @@ int swReactorEpoll_del(swReactor *reactor, int fd)
 	this->event_max--;
 	return SW_OK;
 }
-
+//epoll_wait等待就绪的IO
 int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
 {
 	swEvent ev;
 	swFd fd_;
 	swReactorEpoll *this = reactor->object;
-	int i, n, ret;
+	int i, nready, ret;
 
 	while (swoole_running > 0)
-	{
-		n = epoll_wait(this->epfd, this->events, this->event_max + 1, timeo->tv_sec * 1000 + timeo->tv_usec / 1000);
-
-		if (n < 0)
+	{  
+	
+		nready = epoll_wait(this->epfd, this->events, this->event_max + 1, timeo->tv_sec * 1000 + timeo->tv_usec / 1000);
+         //错误处理
+		if (nready < 0)
 		{
 			//swTrace("epoll error.EP=%d | Errno=%d\n", this->epfd, errno);
 			if(swReactor_error(reactor) < 0)
@@ -129,11 +136,11 @@ int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
 				continue;
 			}
 		}
-		else if (n == 0)
+		else if (nready == 0)  //没有就绪的io
 		{
 			continue;
 		}
-		for (i = 0; i < n; i++)
+		for (i = 0; i < nready; i++)  //处理对应就绪IO的个数
 		{  
 			
 			//printf("event coming.Ep=%d|fd=%d\n", this->epfd, this->events[i].data.fd);
@@ -147,6 +154,11 @@ int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
 				ev.type = fd_.fdtype;
 				ret = reactor->handle[ev.type](reactor, &ev);
 				swTrace("[THREAD #%ld]event finish.Ep=%d|ret=%d\n", pthread_self(), this->epfd, ret);
+			}
+			//epoll out 事件
+			if (this->events[i].events & EPOLLOUT)
+			{
+                 printf("epoll out \n");
 			}
 		}
 	}

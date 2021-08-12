@@ -19,10 +19,6 @@ typedef struct _swReactorPoll
 	struct pollfd *events;
 } swReactorPoll;
 
-int swReactorPoll_add(swReactor *reactor, int fd, int fdtype);
-int swReactorPoll_wait(swReactor *reactor, struct timeval *timeo);
-void swReactorPoll_free(swReactor *reactor);
-int swReactorPoll_del(swReactor *reactor, int fd);
 
 int swReactorPoll_create(swReactor *reactor, int max_fd_num)
 {

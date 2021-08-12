@@ -43,7 +43,9 @@ int swReactor_close(swReactor *reactor, swEvent *event)
 }
 //设置回调函数
 int swReactor_setHandle(swReactor *reactor, int fdtype, swReactor_handle handle)
-{
+{  
+	//printf("swReactor_setHandle is %d\n",fdtype);
+	//printf("hand is function is %p\n",handle);
 	if (fdtype >= SW_MAX_FDTYPE)
 	{
 		return -1;

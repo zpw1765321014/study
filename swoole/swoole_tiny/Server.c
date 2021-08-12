@@ -75,7 +75,7 @@ int swServer_onAccept(swReactor *reactor, swEvent *event)
 	struct sockaddr_in clientaddr;
 	clilen = sizeof(clientaddr);
 	bzero(&clientaddr, clilen);
-	swTrace("[Main]accept start\n");
+	//swTrace("[Main]accept start\n");
 	//得到连接套接字
 	while (1)
 	{
@@ -319,6 +319,7 @@ void swServer_init(swServer *serv)
 	serv->onReceive = NULL;
 	serv->onTimer = NULL;
 }
+//服务器启动的时间
 static int swServer_timer_start(swServer *serv)
 {
 	int timer_fd;
