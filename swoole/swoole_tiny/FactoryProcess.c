@@ -20,7 +20,7 @@ typedef struct _swFactoryProcess
 	int writer_pti; //current writer id
 	int worker_pti; //current worker id
 } swFactoryProcess;
-//管道  sw
+//管道  sw  管道通讯
 typedef struct _swPipes{
 	int pipes[2];
 } swPipes;
@@ -34,7 +34,7 @@ int swFactoryProcess_writer_receive(swReactor *, swEvent *);
 static int swFactoryProcess_manager_loop(swFactory *factory);
 
 static int c_worker_pipe = 0; //Current Proccess Worker's pipe
-
+//进程创建也即是 对应初始化
 int swFactoryProcess_create(swFactory *factory, int writer_num, int worker_num)
 {
 	swFactoryProcess *this;
@@ -62,7 +62,7 @@ int swFactoryProcess_create(swFactory *factory, int writer_num, int worker_num)
 	this->worker_num = worker_num;
 	this->worker_pti = 0;
 
-	factory->running = 1;
+	factory->running = 1;  //进程 已经开始运行
 	factory->object = this;
 	factory->dispatch = swFactoryProcess_dispatch;
 	factory->finish = swFactoryProcess_finish;
@@ -73,7 +73,7 @@ int swFactoryProcess_create(swFactory *factory, int writer_num, int worker_num)
 	factory->onFinish = NULL;
 	return SW_OK;
 }
-
+//进程停止
 int swFactoryProcess_shutdown(swFactory *factory)
 {
 	swFactoryProcess *this = factory->object;
@@ -82,6 +82,7 @@ int swFactoryProcess_shutdown(swFactory *factory)
 	for (i = 0; i < this->worker_num; i++)
 	{
 		swTrace("[Main]kill worker processor\n");
+		//做个杀死进程
 		kill(this->workers[i].pid, SIGTERM);
 	}
 	free(this->workers);
@@ -89,20 +90,23 @@ int swFactoryProcess_shutdown(swFactory *factory)
 	free(this);
 	return SW_OK;
 }
-
+/**************启动对应的进程****************/
 int swFactoryProcess_start(swFactory *factory)
 {
 	int ret, step = 0;
+	//回调注册函数
 	ret = swFactory_check_callback(factory);
 	if (ret < 0)
 	{
 		return --step;
 	}
+	//启动写进程
 	ret = swFactoryProcess_writer_start(factory);
 	if (ret < 0)
 	{
 		return --step;
 	}
+	//启动工作进程
 	ret = swFactoryProcess_worker_start(factory);
 	if (ret < 0)
 	{
@@ -113,7 +117,7 @@ int swFactoryProcess_start(swFactory *factory)
 	return SW_OK;
 }
 
-//create worker child proccess
+//create worker child proccess 主要创建工作进程 管理进程初始化
 static int swFactoryProcess_worker_start(swFactory *factory)
 {
 	swFactoryProcess *this = factory->object;
@@ -129,23 +133,27 @@ static int swFactoryProcess_worker_start(swFactory *factory)
 	}
 
 	for (i = 0; i < this->worker_num; i++)
-	{
+	{    
+		//创建对应的双向管道
 		if (socketpair(PF_LOCAL, SOCK_DGRAM, 0, worker_pipes[i].pipes) < 0)
 		{
 			swTrace("[swFactoryProcess_worker_start]create unix socket fail\n");
 			return SW_ERR;
 		}
 	}
+	//创建 管理进程
 	switch(fork())
 	{
 		case 0:
-			for (i = 0; i < this->worker_num; i++)
+			for (i = 0; i < this->worker_num; i++)  //创建的对应子进程
 			{
-				close(worker_pipes[i].pipes[0]);
+				close(worker_pipes[i].pipes[0]); //关闭写通道
 				writer_pti = (i % this->writer_num);
-				this->workers[i].pipe_fd = worker_pipes[i].pipes[1];
+				//写通道赋值给你 当前对应的进程
+				this->workers[i].pipe_fd = worker_pipes[i].pipes[1]; 
 				this->workers[i].writer_id = writer_pti;
 				pid = swFactoryProcess_worker_spawn(factory, writer_pti, i);
+				//printf("create process pid is %d\n",pid);
 				if(pid < 0)
 				{
 					swTrace("Fork worker process fail.Errno=%d\n", errno);
@@ -156,13 +164,16 @@ static int swFactoryProcess_worker_start(swFactory *factory)
 					this->workers[i].pid = pid;
 				}
 			}
+			//管理进程进入事件循环
 			swFactoryProcess_manager_loop(factory);
 			break;
 		default:
 			for (i = 0; i < this->worker_num; i++)
-			{
-				close(worker_pipes[i].pipes[1]);
+			{   
+				//printf("swFactoryProcess_manager_loop after\n");
+				close(worker_pipes[i].pipes[1]); //关闭读通道
 				writer_pti = (i % this->writer_num);
+				//写进程 添加到reactor
 				this->writers[writer_pti].reactor.add(&(this->writers[writer_pti].reactor), worker_pipes[i].pipes[0], SW_FD_PIPE);
 				this->workers[i].writer_id = writer_pti;
 				this->workers[i].pipe_fd = worker_pipes[i].pipes[0];
@@ -285,7 +296,7 @@ static int swFactoryProcess_worker_loop(swFactory *factory, int c_pipe, int work
 	swTrace("[Worker]max request\n");
 	return SW_OK;
 }
-
+//分发给对应的进程去处理
 int swFactoryProcess_dispatch(swFactory *factory, swEventData *data)
 {
 	swFactoryProcess *this = factory->object;
@@ -359,6 +370,7 @@ int swFactoryProcess_writer_receive(swReactor *reactor, swEvent *ev)
 		return SW_ERR;
 	}
 }
+//进程写事件循环
 int swFactoryProcess_writer_loop(swThreadParam *param)
 {
 	swFactory *factory = param->object;

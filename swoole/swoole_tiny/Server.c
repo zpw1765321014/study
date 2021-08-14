@@ -117,6 +117,7 @@ int swServer_onAccept(swReactor *reactor, swEvent *event)
 	{
 		serv->c_pti = 0;
 	}
+	
 	ret = serv->poll_threads[serv->c_pti].reactor.add(&(serv->poll_threads[serv->c_pti].reactor), conn_fd, SW_FD_TCP);
 	if (ret < 0)
 	{

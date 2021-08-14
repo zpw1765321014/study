@@ -69,7 +69,7 @@ struct swServer_s
 	char open_tcp_nodelay;  //是否关闭Nagle算法
 
 	swPipe main_pipe;         //管道
-	swReactor reactor;        // reactor 
+	swReactor reactor;        // reactor  结构体
 	swFactory factory;       
 	swThreadPoll *poll_threads;   //线程池
 	swListenList_node *listen_list;

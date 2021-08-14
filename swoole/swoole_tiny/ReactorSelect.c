@@ -58,9 +58,10 @@ void swReactorSelect_free(swReactor *reactor)
 	}
 	sw_free(reactor->object);
 }
-
+//select 添加注册函数
 int swReactorSelect_add(swReactor *reactor, int fd, int fdtype)
 {
+	//printf("swReactorSelect_add %d\n",fdtype);
 	swReactorSelect *this = reactor->object;
 	swFdList_node *ev = sw_malloc(sizeof(swFdList_node));
 	ev->fd = fd;

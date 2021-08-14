@@ -67,7 +67,8 @@ void swReactorEpoll_free(swReactor *reactor)
 }
 //reactor 添加对应的fd
 int swReactorEpoll_add(swReactor *reactor, int fd, int fdtype)
-{
+{  
+	
 	swReactorEpoll *this = reactor->object;
 	struct epoll_event e;
 	swFd fd_;
@@ -158,7 +159,7 @@ int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
 			//epoll out 事件
 			if (this->events[i].events & EPOLLOUT)
 			{
-                 printf("epoll out \n");
+                 swTrace("[THREAD #%ld]event epoll_out.Ep=%d|ret=%d\n", pthread_self(), this->epfd, ret);
 			}
 		}
 	}

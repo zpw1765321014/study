@@ -8,8 +8,13 @@ void my_onShutdown(swServer *serv);
 void my_onConnect(swServer *serv, int fd, int from_id);
 void my_onClose(swServer *serv, int fd, int from_id);
 void my_onTimer(swServer *serv, int interval);
-
 void init_main();
+/**
+  服务器端需要处理的数据 
+    1.recv() 接受数据  
+	2.parser()解析数据 
+	3.send()发送数据到客户端
+**/
 /*****初始化回调函数 start*****/
 int main()
 {      
@@ -79,7 +84,7 @@ void my_onTimer(swServer *serv, int interval)
 		break;
 	}
 }
-
+//接受到数据被触发的事件
 int my_onReceive(swFactory *factory, swEventData *req)
 {
 	int ret;
@@ -90,7 +95,7 @@ int my_onReceive(swFactory *factory, swEventData *req)
 	resp.len = req->len + 8;
 	resp.from_id = req->from_id;
 
-	swTrace("Data Len=%d\n", req->len);
+	swTrace("Data Len=%d %s\n", req->len, req->data);
 	snprintf(resp_data, resp.len, "Server:%s", req->data);
 	resp.data = resp_data;
 	ret = factory->finish(factory, &resp);
@@ -104,7 +109,7 @@ int my_onReceive(swFactory *factory, swEventData *req)
 //进程启动的时候
 void my_onStart(swServer *serv)
 {
-	printf("Server is running\n");
+	printf("被触发的连接事件------------Server is running\n");
 }
 
 void my_onShutdown(swServer *serv)
@@ -114,11 +119,11 @@ void my_onShutdown(swServer *serv)
 
 void my_onConnect(swServer *serv, int fd, int from_id)
 {
-	printf("Connect fd=%d|from_id=%d\n", fd, from_id);
+	printf("被触发的连接事件-------------Connect fd=%d|from_id=%d\n", fd, from_id);
 }
 
 void my_onClose(swServer *serv, int fd, int from_id)
 {
-	printf("Close fd=%d|from_id=%d\n", fd, from_id);
+	printf("被触发的连接事件------------Close fd=%d|from_id=%d\n", fd, from_id);
 }
 //ps aux | grep swoole |  awk '{print $2}' | xargs kill -9 杀死所有对应的进程
