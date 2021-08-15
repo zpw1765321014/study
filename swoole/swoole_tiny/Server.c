@@ -18,7 +18,7 @@ static int swServer_timer_start(swServer *serv);
 char swoole_running = 1;
 uint16_t sw_errno = 0;
 char sw_error[SW_ERROR_MSG_SIZE];
-
+//服务端关闭连接时触发函数
 int swServer_onClose(swReactor *reactor, swEvent *event)
 {
 	swServer *serv = reactor->ptr;
@@ -63,7 +63,7 @@ int swServer_onTimer(swReactor *reactor, swEvent *event)
 	swTrace("Timer Call");
 	return ret;
 }
-
+//接收客户端了解请求
 int swServer_onAccept(swReactor *reactor, swEvent *event)
 {
 	swServer *serv = reactor->ptr;
@@ -117,13 +117,14 @@ int swServer_onAccept(swReactor *reactor, swEvent *event)
 	{
 		serv->c_pti = 0;
 	}
-	
+    // 吧对应的fd加入到对应的epoll 中
 	ret = serv->poll_threads[serv->c_pti].reactor.add(&(serv->poll_threads[serv->c_pti].reactor), conn_fd, SW_FD_TCP);
 	if (ret < 0)
 	{
 		swTrace("[Main]add event fail Errno=%d|FD=%d\n", errno, conn_fd);
 		return SW_ERR;
 	}
+	//触发注册的连接回调事件 表示连接成功了
 	serv->onConnect(serv, conn_fd, serv->c_pti);
 	serv->c_pti++;
 	return SW_OK;
@@ -159,7 +160,7 @@ void swServer_timer_free(swServer *serv)
 	}
 	close(serv->timer_fd);
 }
-
+//检查回调函数
 static int swServer_check_callback(swServer *serv)
 {
 	if (serv->onStart == NULL)
@@ -211,12 +212,13 @@ int swServer_start(swServer *serv)
 			return SW_ERR;
 		}
 	}
-	//启动服务
+	/*************启动整个个服务于的进程 start*******/
 	ret = factory->start(factory);
 	if (ret < 0)
 	{
 		return SW_ERR;
 	}
+	/*************启动整个个服务于的进程 start*******/
 	//启动事件循环
 	ret = swServer_poll_start(serv);
 	if (ret < 0)
@@ -226,17 +228,20 @@ int swServer_start(swServer *serv)
 
 	SW_START_SLEEP;
 	//ret = swReactorSelect_create(&main_reactor);
-	ret = swReactorPoll_create(&main_reactor, 10);
+
+	ret = swReactorPoll_create(&main_reactor, 10); //poll 模型的创建
 	if (ret < 0)
 	{
 		return SW_ERR;
 	}
 	main_reactor.ptr = serv;
 	main_reactor.id = 0;
+	/******************设置对应的回调函数 start*****************************/
 	main_reactor.setHandle(&main_reactor, SW_EVENT_CLOSE, swServer_onClose);
 	main_reactor.setHandle(&main_reactor, SW_EVENT_CONNECT, swServer_onAccept);
 	main_reactor.setHandle(&main_reactor, SW_EVENT_TIMER, swServer_onTimer);
-
+    /******************设置对应的回调函数 end*****************************/
+	//把对应的fd添加到对应的 IO数中
 	main_reactor.add(&main_reactor, serv->main_pipe.getFd(&serv->main_pipe, 0), SW_EVENT_CLOSE);
 	if (serv->timer_interval != 0)
 	{
@@ -249,6 +254,7 @@ int swServer_start(swServer *serv)
 	}
 
 	SW_START_SLEEP;
+	// socket bind listen  
 	ret = swServer_listen(serv, &main_reactor);
 	if (ret < 0)
 	{
@@ -262,8 +268,10 @@ int swServer_start(swServer *serv)
 	swSignalInit();
 
 	serv->onStart(serv);  //当服务启动的时候触发的回调函数
+	//主线程进入事件循环
 	main_reactor.wait(&main_reactor, &tmo);
-	serv->onShutdown(serv);
+
+	serv->onShutdown(serv); //关闭服务器是触发的对应的回调函数
 	return SW_OK;
 }
 
@@ -394,7 +402,7 @@ int swServer_create(swServer *serv)
 			swError("serv->max_request < 1 \n");
 			return SW_ERR;
 		}
-		serv->factory.max_request = serv->max_request;
+		serv->factory.max_request = serv->max_request; // 最大请求数
 		//创建进程服务
 		ret = swFactoryProcess_create(&(serv->factory), serv->writer_num, serv->worker_num);
 	}
@@ -414,8 +422,9 @@ int swServer_create(swServer *serv)
 		serv->factory.onFinish = swServer_onFinish2;
 	}
 	else
-	{
-		serv->factory.onFinish = swServer_onFinish;
+	{   
+		//tcp 服务器 完成时的回调函数
+		serv->factory.onFinish = swServer_onFinish; 
 	}
 	return SW_OK;
 }
@@ -490,7 +499,8 @@ static int swServer_poll_start(swServer *serv)
  * only tcp
  */
 int swServer_onFinish(swFactory *factory, swSendData *resp)
-{
+{   
+
 	return swWrite(resp->fd, resp->data, resp->len);
 }
 /**
@@ -601,7 +611,7 @@ static int swServer_poll_onReceive(swReactor *reactor, swEvent *event)
 		buf.fd = event->fd;
 		buf.len = n;
 		buf.from_id = event->from_id;
-		//swTrace("recv: %s|fd=%d|ret=%d|errno=%d\n", buf.data, event->fd, ret, errno);
+		swTrace("recv: %s|fd=%d|ret=%d|errno=%d\n", buf.data, event->fd, ret, errno);
 		ret = factory->dispatch(factory, &buf);
 		if(ret < 0)
 		{
@@ -673,7 +683,7 @@ void swSignalInit(void)
 	swSignalSet(SIGUSR2, SIG_IGN, 1, 0);
 	swSignalSet(SIGTERM, swSignalHanlde, 1, 0);
 }
-
+//添加服务器的额外 监听进程事件
 int swServer_addListen(swServer *serv, int type, char *host, int port)
 {
 	swListenList_node *listen_host = sw_malloc(sizeof(swListenList_node));
@@ -689,7 +699,7 @@ int swServer_addListen(swServer *serv, int type, char *host, int port)
 	}
 	return SW_OK;
 }
-
+//listen  监听服务器
 static int swServer_listen(swServer *serv, swReactor *reactor)
 {  
 	

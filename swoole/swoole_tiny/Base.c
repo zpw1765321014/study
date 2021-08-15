@@ -95,7 +95,7 @@ inline void swFloat2timeval(float timeout, long int *sec, long int *usec)
 	*sec = (int) timeout;
 	*usec = (int) ((timeout * 1000 * 1000) - ((*sec) * 1000 * 1000));
 }
-//监听
+//socket 的创建和监听
 inline int swSocket_listen(int type, char *host, int port, int backlog)
 {  
 	host = "0.0.0.0";  //暂时先写死

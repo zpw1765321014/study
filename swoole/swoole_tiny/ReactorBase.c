@@ -52,7 +52,7 @@ int swReactor_setHandle(swReactor *reactor, int fdtype, swReactor_handle handle)
 	}
 	else
 	{
-		reactor->handle[fdtype] = handle;
+		reactor->handle[fdtype] = handle; //对应的 文件描述符类型设置对应的回调函数
 		return 0;
 	}
 }

@@ -36,18 +36,18 @@ void init_main()
        //config
 	  serv.backlog = 128;
 	  serv.poll_thread_num = 1;
-	  serv.writer_num = 1;
-	  serv.worker_num = 4;
-	  serv.factory_mode = 3;
-	  serv.open_cpu_affinity = 1;
+	  serv.writer_num = 1;       // 工作写进程数据量
+	  serv.worker_num = 4;       //工作进程的数量
+	  serv.factory_mode = 3;     // tcp 服务器
+	  serv.open_cpu_affinity = 1; // 设置对应的CPU的亲和力
 	  serv.open_tcp_nodelay = 1;
 	  //serv.daemonize = 1;
       /************注册对应的回调事件 start*************/
-      serv.onStart = my_onStart;
+      serv.onStart = my_onStart;         //服务启动的时候
 	  serv.onShutdown = my_onShutdown;
-	  serv.onConnect = my_onConnect;
-	  serv.onReceive = my_onReceive;
-	  serv.onClose = my_onClose;
+	  serv.onConnect = my_onConnect;     //服务器被连接的时候
+	  serv.onReceive = my_onReceive;     // 服务器接收到数据的时候
+	  serv.onClose = my_onClose;         //服务器关闭的时候
 	  serv.onTimer = my_onTimer;
       /************注册对应的回调事件 end*************/
 
@@ -109,7 +109,7 @@ int my_onReceive(swFactory *factory, swEventData *req)
 //进程启动的时候
 void my_onStart(swServer *serv)
 {
-	printf("被触发的连接事件------------Server is running\n");
+	printf("my_onStart 被触发的连接事件------------Server is running\n");
 }
 
 void my_onShutdown(swServer *serv)
@@ -119,11 +119,11 @@ void my_onShutdown(swServer *serv)
 
 void my_onConnect(swServer *serv, int fd, int from_id)
 {
-	printf("被触发的连接事件-------------Connect fd=%d|from_id=%d\n", fd, from_id);
+	printf("my_onConnect 被触发的连接事件-------------Connect fd=%d|from_id=%d\n", fd, from_id);
 }
 
 void my_onClose(swServer *serv, int fd, int from_id)
 {
-	printf("被触发的连接事件------------Close fd=%d|from_id=%d\n", fd, from_id);
+	printf("my_onClose 被触发的连接事件------------Close fd=%d|from_id=%d\n", fd, from_id);
 }
 //ps aux | grep swoole |  awk '{print $2}' | xargs kill -9 杀死所有对应的进程

@@ -64,10 +64,10 @@ int swFactoryProcess_create(swFactory *factory, int writer_num, int worker_num)
 
 	factory->running = 1;  //进程 已经开始运行
 	factory->object = this;
-	factory->dispatch = swFactoryProcess_dispatch;
-	factory->finish = swFactoryProcess_finish;
-	factory->start = swFactoryProcess_start;
-	factory->shutdown = swFactoryProcess_shutdown;
+	factory->dispatch = swFactoryProcess_dispatch;  //注册进程分发功能
+	factory->finish = swFactoryProcess_finish;      //注册进程完成是的功能
+	factory->start = swFactoryProcess_start;        //进程 开始启动
+	factory->shutdown = swFactoryProcess_shutdown;  // 服务关闭
 
 	factory->onTask = NULL;
 	factory->onFinish = NULL;
@@ -237,6 +237,7 @@ static int swFactoryProcess_worker_spawn(swFactory *factory, int writer_pti, int
 				close(this->workers[i].pipe_fd);
 			}
 		}
+		//工作进程进入事件循环
 		swFactoryProcess_worker_loop(factory, this->workers[worker_pti].pipe_fd, worker_pti);
 		exit(0);
 	}
@@ -246,7 +247,7 @@ static int swFactoryProcess_worker_spawn(swFactory *factory, int writer_pti, int
 		return pid;
 	}
 }
-
+//工作进程发送数据完毕
 int swFactoryProcess_finish(swFactory *factory, swSendData *resp)
 {
 	//swFactoryProcess *this = factory->object;
@@ -254,18 +255,20 @@ int swFactoryProcess_finish(swFactory *factory, swSendData *resp)
 	memcpy(send_data.data, resp->data, resp->len);
 	send_data.fd = resp->fd;
 	send_data.len = resp->len;
+	
 	return write(c_worker_pipe, &send_data, resp->len + (3 * sizeof(int)));
 }
-
+//工作进程进入事件循环 读取对应的数据
 static int swFactoryProcess_worker_loop(swFactory *factory, int c_pipe, int worker_pti)
-{
+{  
+	
 	swEventData req;
 	//swFactoryProcess *this = factory->object;
 	swServer *serv = factory->ptr;
 	c_worker_pipe = c_pipe;
 	int n;
 	int task_num = factory->max_request;
-
+    /*****************绑定对应的cpu start****************/
 	if (serv->open_cpu_affinity)
 	{
 		cpu_set_t cpu_set;
@@ -276,7 +279,7 @@ static int swFactoryProcess_worker_loop(swFactory *factory, int c_pipe, int work
 			swTrace("pthread_setaffinity_np set fail\n");
 		}
 	}
-
+    /*****************绑定对应的cpu end****************/
 	//主线程
 	while (swoole_running > 0 && task_num > 0)
 	{
@@ -318,6 +321,7 @@ int swFactoryProcess_dispatch(swFactory *factory, swEventData *data)
 	this->worker_pti++;
 	return SW_OK;
 }
+//启动写的工作进程
 static int swFactoryProcess_writer_start(swFactory *factory)
 {
 	swFactoryProcess *this = factory->object;
@@ -346,7 +350,7 @@ static int swFactoryProcess_writer_start(swFactory *factory)
 	}
 	return SW_OK;
 }
-
+//写进程接收对应的数据
 int swFactoryProcess_writer_receive(swReactor *reactor, swEvent *ev)
 {
 	swFactory *factory = reactor->factory;
@@ -364,6 +368,9 @@ int swFactoryProcess_writer_receive(swReactor *reactor, swEvent *ev)
 		send_data.from_id = resp.from_id;
 		send_data.fd = resp.fd;
 		return factory->onFinish(factory, &send_data);
+	}
+	else if(n == 0){  //此时说明客户端已经关闭
+        swTrace("client close [WriteThread]recv: writer=%d|pipe=%d\n", ev->from_id, ev->fd);
 	}
 	else
 	{
