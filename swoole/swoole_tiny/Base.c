@@ -189,6 +189,9 @@ inline int swRead(int fd, char *buf, int count)
 	}
 	return totlen;
 }
+/**
+  对写write 写数据的封装
+**/
 
 inline int swWrite(int fd, char *buf, int count)
 {

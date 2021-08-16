@@ -41,7 +41,7 @@ int swReactor_close(swReactor *reactor, swEvent *event)
 	reactor->del(reactor, event->fd);// 从reactor 也就是红黑树中 删除对应的fd
 	return 0;
 }
-//设置回调函数
+//不同的事件类型设置对应的回调函数
 int swReactor_setHandle(swReactor *reactor, int fdtype, swReactor_handle handle)
 {  
 	//printf("swReactor_setHandle is %d\n",fdtype);

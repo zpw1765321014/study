@@ -117,15 +117,16 @@ int swServer_onAccept(swReactor *reactor, swEvent *event)
 	{
 		serv->c_pti = 0;
 	}
-    // 吧对应的fd加入到对应的epoll 中
+    // 对应的accept fd加入到对应的epoll 中
 	ret = serv->poll_threads[serv->c_pti].reactor.add(&(serv->poll_threads[serv->c_pti].reactor), conn_fd, SW_FD_TCP);
 	if (ret < 0)
 	{
 		swTrace("[Main]add event fail Errno=%d|FD=%d\n", errno, conn_fd);
 		return SW_ERR;
 	}
-	//触发注册的连接回调事件 表示连接成功了
+	/*********表示连接成功了触发注册的连接回调事件 start************/ 
 	serv->onConnect(serv, conn_fd, serv->c_pti);
+	/*********表示连接成功了触发注册的连接回调事件 end************/ 
 	serv->c_pti++;
 	return SW_OK;
 }
@@ -228,7 +229,7 @@ int swServer_start(swServer *serv)
 
 	SW_START_SLEEP;
 	//ret = swReactorSelect_create(&main_reactor);
-
+    //主线程创建reactor 模型
 	ret = swReactorPoll_create(&main_reactor, 10); //poll 模型的创建
 	if (ret < 0)
 	{
@@ -255,7 +256,10 @@ int swServer_start(swServer *serv)
 
 	SW_START_SLEEP;
 	// socket bind listen  
+	/********************在主线程之中 创建了listen fd start********************/
 	ret = swServer_listen(serv, &main_reactor);
+
+	/********************在主线程之中 创建了listen fd end********************/
 	if (ret < 0)
 	{
 		return SW_ERR;
@@ -460,7 +464,7 @@ int swServer_free(swServer *serv)
 	}
 	return SW_OK;
 }
-//启动主线程事件循环
+//创建reactor 线程
 static int swServer_poll_start(swServer *serv)
 {  
 	
@@ -490,6 +494,7 @@ static int swServer_poll_start(swServer *serv)
 		}
 		param->object = serv;
 		param->pti = i;
+		//创建对应的reactor线程 并且进入事件循环
 		pthread_create(&pidt, NULL, (void * (*)(void *)) swServer_poll_loop, (void *) param);
 		poll_thread->ptid = pidt;
 	}
@@ -596,13 +601,15 @@ static int swServer_poll_onReceive(swReactor *reactor, swEvent *event)
 	swFactory *factory = &(serv->factory);
 	swEventData buf;
 	n = swRead(event->fd, buf.data, SW_BUFFER_SIZE);
+	swTrace("swRead data fd: %d\n", event->fd);
 	if (n < 0)
 	{
 		swTrace("swRead error: %d\n", errno);
 		return SW_ERR;
 	}
 	else if (n == 0)
-	{
+	{    
+		//数据读取完毕  需要服务器关闭
 		swTrace("Close Event.FD=%d|From=%d\n", event->fd, event->from_id);
 		return swServer_close(serv, event);
 	}
@@ -700,7 +707,7 @@ int swServer_addListen(swServer *serv, int type, char *host, int port)
 	return SW_OK;
 }
 //listen  监听服务器
-static int swServer_listen(swServer *serv, swReactor *reactor)
+static int (swServer *serv, swReactor *reactor)
 {  
 	
 	int sock;
@@ -730,7 +737,8 @@ static int swServer_listen(swServer *serv, swReactor *reactor)
 		}
 		//TCP
 		else
-		{
+		{   
+			//注册连接事件回调函数  吧对应的listenfd  注册进去
 			reactor->add(reactor, sock, SW_EVENT_CONNECT);
 		}
 		listen_host->sock = sock;

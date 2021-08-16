@@ -1,5 +1,23 @@
 #include "./include/swoole.h"
 #include "./include/Server.h"
+/**
+  1.连接的建立用两种 第一种是来自客户端的建立  epollin 表示此时事件 可读
+                    第二种是服务器去连接其他的服务器  epollout 表示事件可写
+  2.连接的断开
+             客户端断开
+			 服务器端的断开
+  3.消息到达
+       读缓存区的数据复制到用户空间中
+	   read = 0 收到客户端关闭的FIN包
+	   read > 0 正常的业务逻辑
+	   read = -1  出现错误 （其中一个是tcp探活包）
+  4.消息发送完毕
+
+  业务逻辑与网络之间的处理 是否要分离
+  
+  listenfd
+  acceptfd 
+**/  
 
 /*****初始化回调函数 start*****/
 int my_onReceive(swFactory *factory, swEventData *req);
@@ -8,7 +26,7 @@ void my_onShutdown(swServer *serv);
 void my_onConnect(swServer *serv, int fd, int from_id);
 void my_onClose(swServer *serv, int fd, int from_id);
 void my_onTimer(swServer *serv, int interval);
-void init_main();
+void init_main(); //初始化
 /**
   服务器端需要处理的数据 
     1.recv() 接受数据  

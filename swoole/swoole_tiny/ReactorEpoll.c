@@ -153,6 +153,7 @@ int swReactorEpoll_wait(swReactor *reactor, struct timeval *timeo)
 				ev.fd = fd_.fd;
 				ev.from_id = reactor->id;
 				ev.type = fd_.fdtype;
+				//触发对应的回调函数
 				ret = reactor->handle[ev.type](reactor, &ev);
 				swTrace("[THREAD #%ld]event finish.Ep=%d|ret=%d\n", pthread_self(), this->epfd, ret);
 			}
