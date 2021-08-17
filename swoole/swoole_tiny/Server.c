@@ -117,7 +117,9 @@ int swServer_onAccept(swReactor *reactor, swEvent *event)
 	{
 		serv->c_pti = 0;
 	}
-    // 对应的accept fd加入到对应的epoll 中
+    /*
+	  对应的accept fd加入到对应的epoll 中 表示有新的连接到来时的情况 会触发对应的
+	*/ 
 	ret = serv->poll_threads[serv->c_pti].reactor.add(&(serv->poll_threads[serv->c_pti].reactor), conn_fd, SW_FD_TCP);
 	if (ret < 0)
 	{
@@ -707,7 +709,7 @@ int swServer_addListen(swServer *serv, int type, char *host, int port)
 	return SW_OK;
 }
 //listen  监听服务器
-static int (swServer *serv, swReactor *reactor)
+static int swServer_listen(swServer *serv, swReactor *reactor)
 {  
 	
 	int sock;
