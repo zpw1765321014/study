@@ -173,10 +173,12 @@ static int swFactoryProcess_worker_start(swFactory *factory)
 				//printf("swFactoryProcess_manager_loop after\n");
 				close(worker_pipes[i].pipes[1]); //关闭读通道
 				writer_pti = (i % this->writer_num);
-				//写进程 添加到reactor
+				/*************写进程的进程通讯fd 添加到reactor start**********/
+				printf("writes pipi fd %d\n", worker_pipes[i].pipes[0]);
 				this->writers[writer_pti].reactor.add(&(this->writers[writer_pti].reactor), worker_pipes[i].pipes[0], SW_FD_PIPE);
 				this->workers[i].writer_id = writer_pti;
 				this->workers[i].pipe_fd = worker_pipes[i].pipes[0];
+				/*************写进程的进程通讯fd 添加到reactor start**********/
 			}
 			break;
 		case -1:
