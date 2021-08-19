@@ -3,8 +3,8 @@
 
 #include "list.h"
 
-#define SW_EVENT_CLOSE           5
-#define SW_EVENT_CONNECT         6
+#define SW_EVENT_CLOSE           5   //事件关闭
+#define SW_EVENT_CONNECT         6   //事件连接
 #define SW_EVENT_TIMER           7
 
 #define SW_HOST_MAXSIZE          48

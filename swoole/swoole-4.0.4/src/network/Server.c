@@ -708,6 +708,8 @@ int swServer_start(swServer *serv)
 
     //master pid   记录此时的主进程  id
     serv->gs->master_pid = getpid();
+    //swTrace("master pid is %d\n",getpid());
+    //printf("master pid is %d\n",getpid());
     serv->gs->now = serv->stats->start_time = time(NULL);
 
     if (serv->dispatch_mode == SW_DISPATCH_STREAM)

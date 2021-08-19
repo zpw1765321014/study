@@ -77,7 +77,8 @@ int swPipeMsg_read(swPipe *p, void *data, int length)
 	long type = this->type;
 
 	while (1)
-	{
+	{   
+		//msgrcv()函数被用来从消息队列中取出消息
 		ret = msgrcv(this->msg_id, &msg_buf, length, type, flag);
 		if (ret < 0)
 		{

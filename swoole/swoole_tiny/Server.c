@@ -603,7 +603,7 @@ static int swServer_poll_onReceive(swReactor *reactor, swEvent *event)
 	swFactory *factory = &(serv->factory);
 	swEventData buf;
 	n = swRead(event->fd, buf.data, SW_BUFFER_SIZE);
-	swTrace("swRead data fd: %d\n", event->fd);
+	//swTrace("swRead data fd: %d\n", event->fd);
 	if (n < 0)
 	{
 		swTrace("swRead error: %d\n", errno);
@@ -620,8 +620,9 @@ static int swServer_poll_onReceive(swReactor *reactor, swEvent *event)
 		buf.fd = event->fd;
 		buf.len = n;
 		buf.from_id = event->from_id;
-		swTrace("recv: %s|fd=%d|ret=%d|errno=%d\n", buf.data, event->fd, ret, errno);
+		//分发给对应的进程去处理
 		ret = factory->dispatch(factory, &buf);
+		swTrace("recv:%s|fd=%d\n",buf.data,event->fd);
 		if(ret < 0)
 		{
 			swTrace("factory->dispatch fail\n");

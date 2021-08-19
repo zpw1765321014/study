@@ -50,6 +50,8 @@
 	在socket可读时读取数据，并进行协议解析，将请求投递到Worker进程。
 	在socket可写时将数据发送给TCP客户端。
 
+三次握手完成之后才调用accept
+
 **/  
 
 /*****初始化回调函数 start*****/
@@ -146,8 +148,9 @@ int my_onReceive(swFactory *factory, swEventData *req)
 	resp.len = req->len + 8;
 	resp.from_id = req->from_id;
 
-	swTrace("Data Len=%d %s\n", req->len, req->data);
+	//swTrace("Data Len=%d %s\n", req->len, req->data);
 	snprintf(resp_data, resp.len, "Server:%s", req->data);
+	printf("my_onReceive 被触发的连接事件------------Server is running\n");
 	resp.data = resp_data;
 	ret = factory->finish(factory, &resp);
 	if (ret < 0)
@@ -178,3 +181,15 @@ void my_onClose(swServer *serv, int fd, int from_id)
 	printf("my_onClose 被触发的连接事件------------Close fd=%d|from_id=%d\n", fd, from_id);
 }
 //ps aux | grep swoole |  awk '{print $2}' | xargs kill -9 杀死所有对应的进程
+
+
+// gdb -p 进程号 追中对应的进程
+// thread  info 查看其中对应的线程
+
+// bt 查看 堆栈
+
+// t 2 表示查看的是线程2
+
+// strace -f -p 进程号
+
+//  /usr/local/php/lib/php/extensions/no-debug-non-zts-20180731/

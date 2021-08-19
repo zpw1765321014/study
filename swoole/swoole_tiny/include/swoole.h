@@ -46,7 +46,7 @@
 #ifndef MIN
 #define MIN(a, b)              (a)<(b)?a:b;
 #endif
-
+//返回当前的机器的CPU
 #define SW_CPU_NUM             sysconf(_SC_NPROCESSORS_ONLN)
 
 #define SW_STRL(s)             s, sizeof(s)

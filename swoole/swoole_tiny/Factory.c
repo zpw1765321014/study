@@ -28,7 +28,8 @@ int swFactory_dispatch(swFactory *factory, swEventData *req)
 }
 
 int swFactory_finish(swFactory *factory, swSendData *resp)
-{
+{  
+	swTrace("swFactory finish\n");
 	return factory->onFinish(factory, resp);
 }
 

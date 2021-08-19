@@ -2755,7 +2755,7 @@ PHP_METHOD(swoole_server, start)
 {
     zval *zobject = getThis();
     int ret;
-
+    printf("ssssssssssssssssssssssss\n");
     swServer *serv = swoole_get_object(getThis());
     if (serv->gs->start > 0)
     {

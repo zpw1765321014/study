@@ -515,9 +515,10 @@ void swServer_reopen_log_file(swServer *serv)
         swoole_redirect_stdout(SwooleG.log_fd);
     }
 }
-
+//启动服务
 int swServer_start(swServer *serv)
-{
+{  
+    printf("servesssss-----\n");
     swFactory *factory = &serv->factory;
     int ret;
 
@@ -572,11 +573,13 @@ int swServer_start(swServer *serv)
             return SW_ERR;
         }
     }
-
+   
     //master pid
     serv->gs->master_pid = getpid();
     serv->gs->now = serv->stats->start_time = time(NULL);
-
+    //printf("Create MasterPid %d\n",getpid());
+    //获取对应的进程id
+    //swTrace("Create MasterPid %d\n",getpid());
     /**
      * init method
      */
@@ -658,12 +661,12 @@ int swServer_start(swServer *serv)
         }
     }
     serv->running = 1;
-    //factory start
+    //factory start  创建管理进程和工作进程
     if (factory->start(factory) < 0)
     {
         return SW_ERR;
     }
-    //signal Init
+    //signal Init   信号初始化
     swServer_signal_init(serv);
 
     //write PID file
@@ -672,11 +675,12 @@ int swServer_start(swServer *serv)
         ret = sw_snprintf(SwooleTG.buffer_stack->str, SwooleTG.buffer_stack->size, "%d", getpid());
         swoole_file_put_contents(serv->pid_file, SwooleTG.buffer_stack->str, ret);
     }
+    //base  模式
     if (serv->factory_mode == SW_MODE_BASE)
     {
         ret = swReactorProcess_start(serv);
     }
-    else
+    else  // process 模式
     {
         ret = swReactorThread_start(serv);
     }
