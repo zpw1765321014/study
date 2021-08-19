@@ -192,4 +192,3 @@ void my_onClose(swServer *serv, int fd, int from_id)
 
 // strace -f -p 进程号
 
-//  /usr/local/php/lib/php/extensions/no-debug-non-zts-20180731/
