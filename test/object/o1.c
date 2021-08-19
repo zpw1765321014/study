@@ -1,31 +1,43 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#define NAME_LENGTH 32
-//属性
-struct student{
+enum{
+    
+     INVALID_COLOR = 0,
+     RED = 1,
+     GREEN = 2,
+};
+
+//定影bird 结构体
+struct Bird
+{
      
-     const void *_;
-     int age;
-     char name[NAME_LENGTH];
-      
+     char *Name;
+     char *Addr;
+     int Color;
+     int  Weight;
+     //函数指针
+     void (*SetName)(struct Bird *Bird,char *Name);
+     void (*SetAddr)(struct Bird *Bird, char *Addr);
+     void (*SetColor)(struct Bird *Bird, const int Color);
+     void (*SetWeight)(struct Bird *Bird, const int Weight);
+
+     char *(*GetName)(struct Bird *Bird);
+     int  (*getColor)(struct Bird *Bird);
+};
+
+/*************开发对应的回调函数 start**************/
+
+void SetBirdName(struct Bird *Bird,const char *Name)
+{
+    
+      if(Bird == NULL){
+           
+            return ;
+      }
+      Bird->Name = Name;
 }
-//方法
-struct func{
-       
-       size_t size;
-       void (*ctor)(void *self,va_list *params);
-       void* (*dtor)(void *self);
 
-       void  (*set_age)(int age);
-       int   (*get_age)(int age);
-       void  (*set_name)(char *name);
-       char  (*get_name)(void);
-}
 
-void *New(const void *class,...){
 
-}
-
-void Delete(void *class){
-
-}
+/*************开发对应的回调函数 end**************/
