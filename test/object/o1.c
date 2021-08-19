@@ -30,9 +30,7 @@ struct Bird
 
 void SetBirdName(struct Bird *Bird,const char *Name)
 {
-    
       if(Bird == NULL){
-           
             return ;
       }
       Bird->Name = Name;
