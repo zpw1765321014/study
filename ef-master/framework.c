@@ -156,7 +156,7 @@ int ef_add_listen(ef_runtime_t *rt, int socket, ef_routine_proc_t proc)
 
     return 0;
 }
-
+//进入主要事件循环
 int ef_run_loop(ef_runtime_t *rt)
 {
     ef_event_t evts[1024];
