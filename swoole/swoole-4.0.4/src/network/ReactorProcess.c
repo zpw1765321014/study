@@ -181,13 +181,7 @@ int swReactorProcess_start(swServer *serv)
 
     return SW_OK;
 }
-/**
- * @brief reactor 线程从管道中读取数据
- * 
- * @param reactor 
- * @param event 
- * @return int 
- */
+
 static int swReactorProcess_onPipeRead(swReactor *reactor, swEvent *event)
 {
     swEventData task;
@@ -233,13 +227,7 @@ static int swReactorProcess_onPipeRead(swReactor *reactor, swEvent *event)
     }
     return SW_OK;
 }
-/**
- * @brief 
- *  reactor  线程进入事件循环
- * @param pool 
- * @param worker 
- * @return int 
- */
+
 static int swReactorProcess_loop(swProcessPool *pool, swWorker *worker)
 {
     swServer *serv = pool->ptr;
@@ -247,7 +235,7 @@ static int swReactorProcess_loop(swProcessPool *pool, swWorker *worker)
 
     SwooleG.process_type = SW_PROCESS_WORKER;
     SwooleG.pid = getpid();
-    
+
     SwooleWG.id = worker->id;
     if (serv->max_request > 0)
     {
@@ -303,8 +291,8 @@ static int swReactorProcess_loop(swProcessPool *pool, swWorker *worker)
                 return SW_ERR;
             }
         }
-#endif   
-        reactor->add(reactor, ls->sock, fdtype); //加入事件循环
+#endif
+        reactor->add(reactor, ls->sock, fdtype);
     }
 
     SwooleG.main_reactor = reactor;
@@ -334,7 +322,7 @@ static int swReactorProcess_loop(swProcessPool *pool, swWorker *worker)
     reactor->disable_accept = 0;
     reactor->enable_accept = swServer_enable_accept;
     reactor->close = swReactorThread_close;
-    /***********************设置对应的回调函数 start**************************/
+
     //set event handler
     //connect
     reactor->setHandle(reactor, SW_FD_LISTEN, swServer_master_onAccept);
@@ -439,13 +427,7 @@ static int swReactorProcess_loop(swProcessPool *pool, swWorker *worker)
 
     return SW_OK;
 }
-/**
- * @brief reactor 进程关闭
- * 
- * @param reactor 
- * @param event 
- * @return int 
- */
+
 int swReactorProcess_onClose(swReactor *reactor, swEvent *event)
 {
     int fd = event->fd;

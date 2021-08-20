@@ -18,7 +18,7 @@
 
 #include <sys/stat.h>
 #include <poll.h>
-//scocket 发送文件
+
 int swSocket_sendfile_sync(int sock, char *filename, off_t offset, size_t length, double timeout)
 {
     int timeout_ms = timeout < 0 ? -1 : timeout * 1000;
@@ -295,7 +295,7 @@ int swSocket_sendto_blocking(int fd, void *__buf, size_t __n, int flag, struct s
 
     return n;
 }
-//socket 的创建
+
 int swSocket_create(int type)
 {
     int _domain;
@@ -331,10 +331,9 @@ int swSocket_create(int type)
         swWarn("unknown socket type [%d]", type);
         return SW_ERR;
     }
-    //socket()函数的原型
     return socket(_domain, _type, 0);
 }
-//socket 绑定
+
 int swSocket_bind(int sock, int type, char *host, int *port)
 {
     int ret;
@@ -368,7 +367,6 @@ int swSocket_bind(int sock, int type, char *host, int *port)
         unlink(host);
         addr_un.sun_family = AF_UNIX;
         strncpy(addr_un.sun_path, host, sizeof(addr_un.sun_path) - 1);
-        //绑定的socket文件 
         ret = bind(sock, (struct sockaddr*) &addr_un, sizeof(addr_un));
     }
     //IPv6

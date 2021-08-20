@@ -53,9 +53,7 @@ void swWorker_free(swWorker *worker)
         sw_shm_free(worker->send_shm);
     }
 }
-/****
- *  worker 进程信号初始化
- * */
+
 void swWorker_signal_init(void)
 {
     swSignal_clear();
@@ -121,15 +119,10 @@ void swWorker_signal_handler(int signo)
         break;
     }
 }
-/***********
- * swWorker_discard_data 验证数据有效性
- * swServer_connection_verify 函数利用 task->info.fd 这个 sessionid 
- * 来验证连接的有效性，如果连接已经关闭，或者已经被删除，那么就要抛弃当前数据
- * */
+
 static sw_inline int swWorker_discard_data(swServer *serv, swEventData *task)
 {
     int session_id = task->info.fd;
-    
     //check connection
     swConnection *conn = swServer_connection_verify(serv, session_id);
     if (conn == NULL)
@@ -283,14 +276,7 @@ static int swWorker_onStreamPackage(swConnection *conn, char *data, uint32_t len
 
     return SW_OK;
 }
-/**
- * @brief 
- * 
- * swWorker_onTask 函数处理数据
- * @param factory 
- * @param task 
- * @return int 
- */
+
 int swWorker_onTask(swFactory *factory, swEventData *task)
 {
     swServer *serv = factory->ptr;
@@ -304,9 +290,9 @@ int swWorker_onTask(swFactory *factory, swEventData *task)
     factory->last_from_id = task->info.from_id;
     serv->last_session_id = task->info.fd;
     swWorker *worker = SwooleWG.worker;
-    //worker busy  worker  进程处于繁忙的状态
+    //worker busy
     worker->status = SW_WORKER_BUSY;
-    //printf("on task server type %d\n", task->info.type);
+
     switch (task->info.type)
     {
     //no buffer
@@ -457,14 +443,9 @@ int swWorker_onTask(swFactory *factory, swEventData *task)
     }
     return SW_OK;
 }
-/************
- * 
- * swWorker_onStart 进程启动
- * 
- * */
+
 void swWorker_onStart(swServer *serv)
-{   
-    //printf("swWorker callback\n");
+{
     /**
      * Release other worker process
      */
@@ -568,7 +549,7 @@ void swWorker_onStart(swServer *serv)
         serv->onWorkerStart(serv, SwooleWG.id);
     }
 }
-//
+
 void swWorker_onStop(swServer *serv)
 {
     if (serv->onWorkerStop)
@@ -576,7 +557,7 @@ void swWorker_onStop(swServer *serv)
         serv->onWorkerStop(serv, SwooleWG.id);
     }
 }
-//swWorker_stop 关闭 worker 进程
+
 static void swWorker_stop()
 {
     swWorker *worker = SwooleWG.worker;
@@ -742,7 +723,6 @@ void swWorker_clean(void)
 
 /**
  * worker main loop
- * swWorker_loop 函数 worker 事件循环
  */
 int swWorker_loop(swFactory *factory, int worker_id)
 {
@@ -759,7 +739,6 @@ int swWorker_loop(swFactory *factory, int worker_id)
     SwooleG.pid = getpid();
 
     swWorker *worker = swServer_get_worker(serv, worker_id);
-    //swServer_worker_init 函数用于初始化 worker 进程
     swServer_worker_init(serv, worker);
 
     SwooleG.main_reactor = sw_malloc(sizeof(swReactor));
@@ -768,7 +747,7 @@ int swWorker_loop(swFactory *factory, int worker_id)
         swError("[Worker] malloc for reactor failed.");
         return SW_ERR;
     }
-    //SwooleG.main_reactor->wait 函数进行事件循环
+
     if (swReactor_create(SwooleG.main_reactor, SW_REACTOR_MAXEVENTS) < 0)
     {
         swError("[Worker] create worker_reactor failed.");
@@ -776,18 +755,15 @@ int swWorker_loop(swFactory *factory, int worker_id)
     }
     
     worker->status = SW_WORKER_IDLE;
-    // pipe_worker 这个 socket
+
     int pipe_worker = worker->pipe_worker;
 
-    //printf("create pipe worker %d\n", pipe_worker);
-
-    swSetNonBlock(pipe_worker); //管道描述 非阻塞
-    /**********************worker 进程进入事件循环 start********************************/
+    swSetNonBlock(pipe_worker);
     SwooleG.main_reactor->ptr = serv;
     SwooleG.main_reactor->add(SwooleG.main_reactor, pipe_worker, SW_FD_PIPE | SW_EVENT_READ);
     SwooleG.main_reactor->setHandle(SwooleG.main_reactor, SW_FD_PIPE, swWorker_onPipeReceive);
     SwooleG.main_reactor->setHandle(SwooleG.main_reactor, SW_FD_WRITE, swReactor_onWrite);
-    /**********************worker 进程进入事件循环 end********************************/
+
     /**
      * set pipe buffer size
      */
@@ -801,11 +777,7 @@ int swWorker_loop(swFactory *factory, int worker_id)
         pipe_socket = swReactor_get(SwooleG.main_reactor, worker->pipe_worker);
         pipe_socket->buffer_size = SW_MAX_INT;
     }
-    /*
-        如果 worker 的 dispatch_mode 是 stream，
-         reactor 还要监听 serv->stream_fd，
-         以便可以更加高效的消费 reactor 线程发送的数据
-    */
+
     if (serv->dispatch_mode == SW_DISPATCH_STREAM)
     {
         SwooleG.main_reactor->add(SwooleG.main_reactor, serv->stream_fd, SW_FD_LISTEN | SW_EVENT_READ);
@@ -816,7 +788,7 @@ int swWorker_loop(swFactory *factory, int worker_id)
         serv->stream_protocol.onPackage = swWorker_onStreamPackage;
         serv->buffer_pool = swLinkedList_new(0, NULL);
     }
-     //启动worker  进程
+
     swWorker_onStart(serv);
 
 #ifdef HAVE_SIGNALFD
@@ -830,7 +802,7 @@ int swWorker_loop(swFactory *factory, int worker_id)
     //clear pipe buffer
     swWorker_clean();
     //worker shutdown
-    swWorker_onStop(serv); //工作进程停止
+    swWorker_onStop(serv);
     return SW_OK;
 }
 
@@ -855,13 +827,10 @@ int swWorker_send2reactor(swEventData *ev_data, size_t sendn, int session_id)
 }
 
 /**
- * 
- * 接受来自客户端的数据
  * receive data from reactor
  */
 static int swWorker_onPipeReceive(swReactor *reactor, swEvent *event)
-{  
-    
+{
     swEventData task;
     swServer *serv = reactor->ptr;
     swFactory *factory = &serv->factory;

@@ -535,7 +535,6 @@ void php_swoole_server_before_start(swServer *serv, zval *zobject TSRMLS_DC)
 {
     /**
      * create swoole server
-     * swServer_create 函数主要任务是 swReactorThread_create 创建 reactor 多线程
      */
     if (swServer_create(serv) < 0)
     {
@@ -631,11 +630,7 @@ void php_swoole_server_before_start(swServer *serv, zval *zobject TSRMLS_DC)
         }
     }
 }
-/**
- * @brief 注册回调函数
- * 
- * @param serv 
- */
+
 void php_swoole_register_callback(swServer *serv)
 {
     /*
@@ -2744,18 +2739,17 @@ PHP_METHOD(swoole_server, addProcess)
     RETURN_LONG(id);
 }
 /**
- * @brief 
-   swoole 启动函数
  * 
- *
+ * 
+ * swoole server 启动
  * @brief Construct a new php method object
  * 
  */
 PHP_METHOD(swoole_server, start)
-{
+{   
     zval *zobject = getThis();
     int ret;
-    printf("ssssssssssssssssssssssss\n");
+
     swServer *serv = swoole_get_object(getThis());
     if (serv->gs->start > 0)
     {
@@ -2771,12 +2765,12 @@ PHP_METHOD(swoole_server, start)
         RETURN_FALSE;
     }
     //-------------------------------------------------------------
-    serv->onReceive = php_swoole_onReceive;
-   // server 启动之前的  php_swoole_server_before_start 主要调用 swServer_create 函数
+    serv->onReceive = php_swoole_onReceive; //设置接收数据的回调函数
+  
+    //启动之前检测服务器
     php_swoole_server_before_start(serv, zobject TSRMLS_CC);
-   // 服务启动
+    //启动服务器
     ret = swServer_start(serv);
-    
     if (ret < 0)
     {
         swoole_php_fatal_error(E_ERROR, "failed to start server. Error: %s", sw_error);

@@ -20,7 +20,7 @@ static int swPipeUnsock_read(swPipe *p, void *data, int length);
 static int swPipeUnsock_write(swPipe *p, void *data, int length);
 static int swPipeUnsock_getFd(swPipe *p, int master);
 static int swPipeUnsock_close(swPipe *p);
-//unixsocket 的结构体  pipe 的匿名管道，swPipeUnsock 管道是双向通信的管道。
+
 typedef struct _swPipeUnsock
 {
     /**
@@ -37,13 +37,13 @@ typedef struct _swPipeUnsock
      */
     uint8_t pipe_worker_closed;
 } swPipeUnsock;
-// swPipeUnsock_getFd 函数
+
 static int swPipeUnsock_getFd(swPipe *p, int master)
 {
     swPipeUnsock *this = p->object;
     return master == 1 ? this->socks[1] : this->socks[0];
 }
-//释放
+
 static int swPipeUnsock_close(swPipe *p)
 {
     swPipeUnsock *object = p->object;
@@ -51,7 +51,7 @@ static int swPipeUnsock_close(swPipe *p)
     sw_free(object);
     return ret;
 }
-//关闭管道
+
 int swPipeUnsock_close_ext(swPipe *p, int which)
 {
     int ret1 = 0, ret2 = 0;
@@ -83,17 +83,9 @@ int swPipeUnsock_close_ext(swPipe *p, int which)
 
     return 0 - ret1 - ret2;
 }
-/**
- * @brief 
- *  创建unix socket 管道
- * @param p 
- * @param blocking 
- * @param protocol 
- * @return int 
- */
-int swPipeUnsock_create(swPipe *p, int blocking, int protocol)
-{  
 
+int swPipeUnsock_create(swPipe *p, int blocking, int protocol)
+{
     int ret;
     swPipeUnsock *object = sw_malloc(sizeof(swPipeUnsock));
     if (object == NULL)
@@ -103,11 +95,6 @@ int swPipeUnsock_create(swPipe *p, int blocking, int protocol)
     }
     bzero(object, sizeof(swPipeUnsock));
     p->blocking = blocking;
-    /**
-     * @brief 
-     * socketpair()函数用于创建一对无名的、相互连接的套接子
-     *  (socketpair(AF_UNIX, SOCK_STREAM, 0, socket_pair)
-     */
     ret = socketpair(AF_UNIX, protocol, 0, object->socks);
     if (ret < 0)
     {
@@ -136,13 +123,12 @@ int swPipeUnsock_create(swPipe *p, int blocking, int protocol)
     }
     return 0;
 }
-//管道读取数据
+
 static int swPipeUnsock_read(swPipe *p, void *data, int length)
-{    
-    
+{
     return read(((swPipeUnsock *) p->object)->socks[0], data, length);
 }
-//unixsocket  写入数据 
+
 static int swPipeUnsock_write(swPipe *p, void *data, int length)
 {
     return write(((swPipeUnsock *) p->object)->socks[1], data, length);

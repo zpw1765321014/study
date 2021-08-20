@@ -123,21 +123,21 @@ typedef struct _swUdpFd
     struct sockaddr addr;
     int sock;
 } swUdpFd;
-//reactor  线程结构体
+
 typedef struct _swReactorThread
 {
-    pthread_t thread_id; //对应的线程id
-    swReactor reactor;   //对应的reactor结构体
+    pthread_t thread_id;
+    swReactor reactor;
     swUdpFd *udp_addrs;
     swMemoryPool *buffer_input;
 #ifdef SW_USE_RINGBUFFER
     int *pipe_read_list;
 #endif
-    swLock lock;       //对应的锁
+    swLock lock;
     int notify_pipe;
 } swReactorThread;
 
-typedef struct _swListenPort  //listenport 结构体
+typedef struct _swListenPort
 {
     struct _swListenPort *next, *prev;
 
@@ -859,15 +859,7 @@ static sw_inline swWorker* swServer_get_worker(swServer *serv, uint16_t worker_i
 
     return NULL;
 }
-/**
- * @brief   
- * 进程调度算法 分发给对应的进程去处理
- * 本函数根据 dispatch_mode 的不同，计算 key 值
- * @param serv 
- * @param fd 
- * @param data 
- * @return sw_inline 
- */
+
 static sw_inline int swServer_worker_schedule(swServer *serv, int fd, swEventData *data)
 {
     uint32_t key;

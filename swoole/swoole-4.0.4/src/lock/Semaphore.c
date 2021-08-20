@@ -20,7 +20,7 @@
 static int swSem_lock(swLock *lock);
 static int swSem_unlock(swLock *lock);
 static int swSem_free(swLock *lock);
-// 信号量的创建
+
 int swSem_create(swLock *lock, key_t key)
 {
     int ret;
@@ -43,7 +43,7 @@ int swSem_create(swLock *lock, key_t key)
 
     return SW_OK;
 }
-/**************信号量的创建 start********************/
+
 static int swSem_unlock(swLock *lock)
 {
     struct sembuf sem;
@@ -66,4 +66,3 @@ static int swSem_free(swLock *lock)
 {
     return semctl(lock->object.sem.semid, 0, IPC_RMID);
 }
-/**************信号量的创建 end********************/

@@ -16,12 +16,7 @@
 
 #include "swoole.h"
 #include <sys/shm.h>
-/**
- * @brief 
- *   共享内存的申请与创建
- * @param size 
- * @return void* 
- */
+
 void* sw_shm_malloc(size_t size)
 {
     swShareMemory object;

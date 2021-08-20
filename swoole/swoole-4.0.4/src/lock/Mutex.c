@@ -20,17 +20,13 @@ static int swMutex_lock(swLock *lock);
 static int swMutex_unlock(swLock *lock);
 static int swMutex_trylock(swLock *lock);
 static int swMutex_free(swLock *lock);
-// 互斥锁的创建就是 pthread_mutex 互斥锁的初始化
-/********************
- 首先初始化互斥锁的属性 pthread_mutexattr_t attr，
- 设定互斥锁是否要进程共享，之后设置各个关于锁的函数：
- * */
+
 int swMutex_create(swLock *lock, int use_in_process)
 {
     int ret;
     bzero(lock, sizeof(swLock));
-    lock->type = SW_MUTEX; //锁的类型 
-    pthread_mutexattr_init(&lock->object.mutex.attr); //锁的初始化
+    lock->type = SW_MUTEX;
+    pthread_mutexattr_init(&lock->object.mutex.attr);
     if (use_in_process == 1)
     {
         pthread_mutexattr_setpshared(&lock->object.mutex.attr, PTHREAD_PROCESS_SHARED);
@@ -45,12 +41,12 @@ int swMutex_create(swLock *lock, int use_in_process)
     lock->free = swMutex_free;
     return SW_OK;
 }
-/********************互斥锁相关的函数 start****************************/
+
 static int swMutex_lock(swLock *lock)
 {
     return pthread_mutex_lock(&lock->object.mutex._lock);
 }
-//解锁
+
 static int swMutex_unlock(swLock *lock)
 {
     return pthread_mutex_unlock(&lock->object.mutex._lock);
@@ -96,10 +92,9 @@ int swMutex_lockwait(swLock *lock, int timeout_msec)
     return ETIMEDOUT;
 }
 #endif
-//释放锁
+
 static int swMutex_free(swLock *lock)
 {
     pthread_mutexattr_destroy(&lock->object.mutex.attr);
     return pthread_mutex_destroy(&lock->object.mutex._lock);
 }
-/********************互斥锁相关的函数 start****************************/

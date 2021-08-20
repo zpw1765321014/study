@@ -17,7 +17,7 @@ $http->set([
     //'open_cpu_affinity' => 1,
     //'task_worker_num' => 100,
     //'enable_port_reuse' => true,
-    'worker_num' => swoole_cpu_num() * 2,
+//    'worker_num' => 4,
     //'log_file' => __DIR__.'/swoole.log',
 //    'reactor_num' => 24,
     //'dispatch_mode' => 3,
@@ -30,8 +30,8 @@ $http->set([
 //'daemonize' => true,
 //    'ssl_cert_file' => $key_dir.'/ssl.crt',
 //    'ssl_key_file' => $key_dir.'/ssl.key',
-   // 'enable_static_handler' => true,
-    //'document_root' => '/home/htf/workspace/php/www.swoole.com/web/'
+    'enable_static_handler' => true,
+    'document_root' => '/home/htf/workspace/php/www.swoole.com/web/'
 ]);
 
 $http->listen('127.0.0.1', 9502, SWOOLE_SOCK_TCP);

@@ -24,7 +24,7 @@ static int swRWLock_unlock(swLock *lock);
 static int swRWLock_trylock_rw(swLock *lock);
 static int swRWLock_trylock_rd(swLock *lock);
 static int swRWLock_free(swLock *lock);
-//读写锁的创建
+
 int swRWLock_create(swLock *lock, int use_in_process)
 {
     int ret;
@@ -47,7 +47,7 @@ int swRWLock_create(swLock *lock, int use_in_process)
     lock->free = swRWLock_free;
     return SW_OK;
 }
-/***************读写锁的相关函数 start***************/
+
 static int swRWLock_lock_rd(swLock *lock)
 {
     return pthread_rwlock_rdlock(&lock->object.rwlock._lock);
@@ -77,5 +77,5 @@ static int swRWLock_free(swLock *lock)
 {
     return pthread_rwlock_destroy(&lock->object.rwlock._lock);
 }
-/***************读写锁的相关函数 end***************/
+
 #endif

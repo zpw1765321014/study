@@ -531,17 +531,9 @@ static int swReactorThread_onPipeReceive(swReactor *reactor, swEvent *ev)
 
     return SW_OK;
 }
-/**
- * @brief  
- *   swReactorThread_send2worker  reactor 线程发送数据给 目标target_worker_id  进程
- * @param data 
- * @param len 
- * @param target_worker_id 
- * @return int 
- */
+
 int swReactorThread_send2worker(void *data, int len, uint16_t target_worker_id)
-{  
-    
+{
     swServer *serv = SwooleG.serv;
 
     assert(target_worker_id < serv->worker_num);
@@ -606,8 +598,7 @@ int swReactorThread_send2worker(void *data, int len, uint16_t target_worker_id)
  * send to client or append to out_buffer
  */
 int swReactorThread_send(swSendData *_send)
-{  
-    
+{
     swServer *serv = SwooleG.serv;
     uint32_t session_id = _send->info.fd;
     void *_send_data = _send->data;
@@ -836,14 +827,10 @@ int swReactorThread_send(swSendData *_send)
 }
 
 /**
- * @brief 
- * 
- *写事件回调 reactor 线程中的事件回调
  * [ReactorThread] worker pipe can write.
  */
 static int swReactorThread_onPipeWrite(swReactor *reactor, swEvent *ev)
-{  
-    
+{
     int ret;
 
     swBuffer_chunk *chunk = NULL;
@@ -928,9 +915,7 @@ static int swReactorThread_onPipeWrite(swReactor *reactor, swEvent *ev)
 
     return SW_OK;
 }
-/*
-  swReactorThread_set_protocol 用于设置 TCP、UDP 的读写回调函数
-*/
+
 void swReactorThread_set_protocol(swServer *serv, swReactor *reactor)
 {
     //UDP Packet
@@ -1118,15 +1103,12 @@ static int swReactorThread_onWrite(swReactor *reactor, swEvent *ev)
     }
     return SW_OK;
 }
-/********
- * swReactorThread_create 创建线程池对象
- * 
- * */
+
 int swReactorThread_create(swServer *serv)
 {
     int ret = 0;
     /**
-     * init reactor thread pool  申请内存
+     * init reactor thread pool
      */
     serv->reactor_threads = SwooleG.memory_pool->alloc(SwooleG.memory_pool, (serv->reactor_num * sizeof(swReactorThread)));
     if (serv->reactor_threads == NULL)
@@ -1138,7 +1120,7 @@ int swReactorThread_create(swServer *serv)
     /**
      * alloc the memory for connection_list
      */
-    if (serv->factory_mode == SW_MODE_PROCESS)  // process 模式
+    if (serv->factory_mode == SW_MODE_PROCESS)
     {
         serv->connection_list = sw_shm_calloc(serv->max_connection, sizeof(swConnection));
     }
@@ -1183,21 +1165,14 @@ int swReactorThread_create(swServer *serv)
     }
     return SW_OK;
 }
-/**
- * @brief swReactorThread_start 创建reactor 线程
- * 
- * @param serv 
- * @param main_reactor_ptr 
- * @return int 
- * 
- */
+
 int swReactorThread_start(swServer *serv, swReactor *main_reactor_ptr)
 {
     swThreadParam *param;
     swReactorThread *thread;
     pthread_t pidt;
     int i;
-    // swServer_store_listen_socket 函数用于将监控的 socket 存放于 connection_list 中
+
     swServer_store_listen_socket(serv);
 
 #ifdef HAVE_REUSEPORT
@@ -1211,7 +1186,6 @@ int swReactorThread_start(swServer *serv, swReactor *main_reactor_ptr)
         {
             continue;
         }
-        // 向 main_reactor 中添加监听的 socket 文件描述符
         main_reactor_ptr->add(main_reactor_ptr, ls->sock, SW_FD_LISTEN);
     }
 
@@ -1219,12 +1193,10 @@ int swReactorThread_start(swServer *serv, swReactor *main_reactor_ptr)
     //init thread barrier
     pthread_barrier_init(&serv->barrier, NULL, serv->reactor_num + 1);
 #endif
-    
-    // printf("serv->reactor_num%d\n", serv->reactor_num);
+
     //create reactor thread
     for (i = 0; i < serv->reactor_num; i++)
-    {   
-        //printf("create thread id %lu\n", pthread_self());
+    {
         thread = &(serv->reactor_threads[i]);
         param = SwooleG.memory_pool->alloc(SwooleG.memory_pool, sizeof(swThreadParam));
         if (param == NULL)
@@ -1232,7 +1204,7 @@ int swReactorThread_start(swServer *serv, swReactor *main_reactor_ptr)
             swError("malloc failed");
             return SW_ERR;
         }
-         
+
         param->object = serv;
         param->pti = i;
 
@@ -1253,11 +1225,6 @@ int swReactorThread_start(swServer *serv, swReactor *main_reactor_ptr)
 }
 
 /**
- * @brief reactor 线程进入事件循环
- * 
- * @param param 
- * @return * ReactorThread 
-   reactor 多线程在建立之时，就会调用 swReactorThread_loop 函数开启 reactor 事件循环
  * ReactorThread main Loop
  */
 static int swReactorThread_loop(swThreadParam *param)
@@ -1267,7 +1234,7 @@ static int swReactorThread_loop(swThreadParam *param)
     int reactor_id = param->pti;
 
     pthread_t thread_id = pthread_self();
-  
+
     SwooleTG.factory_lock_target = 0;
     SwooleTG.factory_target_worker = -1;
     SwooleTG.id = reactor_id;
@@ -1293,7 +1260,7 @@ static int swReactorThread_loop(swThreadParam *param)
 
     SwooleTG.reactor = reactor;
 
-#ifdef HAVE_CPU_AFFINITY  //是否绑定cpu()
+#ifdef HAVE_CPU_AFFINITY
     //cpu affinity setting
     if (serv->open_cpu_affinity)
     {
@@ -1315,7 +1282,7 @@ static int swReactorThread_loop(swThreadParam *param)
         }
     }
 #endif
-    //创建 reactor 模型 epoll
+
     ret = swReactor_create(reactor, SW_REACTOR_MAXEVENTS);
     if (ret < 0)
     {
@@ -1337,7 +1304,7 @@ static int swReactorThread_loop(swThreadParam *param)
     reactor->setHandle(reactor, SW_FD_CLOSE, swReactorThread_onClose);
     reactor->setHandle(reactor, SW_FD_PIPE | SW_EVENT_READ, swReactorThread_onPipeReceive);
     reactor->setHandle(reactor, SW_FD_PIPE | SW_EVENT_WRITE, swReactorThread_onPipeWrite);
-    /*如果 server 中存在 UDP 监听端口，而且该监听的 socket 与 reactor_id 相对应，那么向 reactor 对象添加文件描述符进行监听*/
+
     //listen UDP
     if (serv->have_udp_sock == 1)
     {
@@ -1377,7 +1344,7 @@ static int swReactorThread_loop(swThreadParam *param)
 
     if (serv->factory_mode == SW_MODE_PROCESS)
     {
-#ifdef SW_USE_RINGBUFFER   // 构造 pipe_read_list 存储 pipe
+#ifdef SW_USE_RINGBUFFER
         thread->pipe_read_list = sw_calloc(serv->reactor_pipe_num, sizeof(int));
         if (thread->pipe_read_list == NULL)
         {
@@ -1391,7 +1358,7 @@ static int swReactorThread_loop(swThreadParam *param)
             if (i % serv->reactor_num == reactor_id)
             {
                 pipe_fd = serv->workers[i].pipe_master;
-                
+
                 //for request
                 swBuffer *buffer = swBuffer_new(sizeof(swEventData));
                 if (!buffer)
@@ -1406,8 +1373,7 @@ static int swReactorThread_loop(swThreadParam *param)
                 reactor->add(reactor, pipe_fd, SW_FD_PIPE);
 
                 if (thread->notify_pipe == 0)
-                {   
-                    // 当 reactor 线程启动的时候，会将 pipe_master 加入 reactor 的监控当中。
+                {
                     thread->notify_pipe = serv->workers[i].pipe_worker;
                 }
 
@@ -1435,7 +1401,7 @@ static int swReactorThread_loop(swThreadParam *param)
             }
         }
     }
-/*如果开启了时间轮算法，就要创建 reactor->timewheel 对象*/
+
 #ifdef SW_USE_TIMEWHEEL
     if (serv->heartbeat_idle_time > 0)
     {
@@ -1488,8 +1454,7 @@ static int swReactorThread_loop(swThreadParam *param)
  * dispatch request data [only data frame]
  */
 int swReactorThread_dispatch(swConnection *conn, char *data, uint32_t length)
-{  
-    //printf("dispatch %s\n",data);
+{
     swFactory *factory = SwooleG.factory;
     swServer *serv = factory->ptr;
     swDispatchData task;

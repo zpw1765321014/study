@@ -5,10 +5,10 @@ void *rec_func(void *arg)
 {
      int sockfd,new_fd,nbytes;
      char buffer[RECVBUFSIZE];
-
+     printf("current thread is %lu\n",pthread_self());
      //参数转换成对应的整形
      new_fd = *((int *) arg); //转换成整形的数据
-     printf("children accept fd is %d\n",new_fd);
+     //printf("children accept fd is %d\n",new_fd);
      free(arg); 
      // 接受客户端消息
      while(1)
@@ -37,7 +37,7 @@ void *rec_func(void *arg)
             buffer[nbytes] = '\0';
 
             //打印接受的数据
-            printf("I have received:%s\n",buffer);
+            //printf("I have received:%s\n",buffer);
 
             //数据返回给客户端
             if(send(new_fd,buffer,strlen(buffer),0) == -1)

@@ -65,12 +65,7 @@ static int swFactoryProcess_shutdown(swFactory *factory)
 
     return SW_OK;
 }
-/**
- * @brief   factory->start 开启 manager、work 进程
- * 
- * @param factory 
- * @return int 
- */
+
 static int swFactoryProcess_start(swFactory *factory)
 {
     int i;
@@ -85,7 +80,7 @@ static int swFactoryProcess_start(swFactory *factory)
             return SW_ERR;
         }
     }
-    //创建管道的个数
+
     serv->reactor_pipe_num = serv->worker_num / serv->reactor_num;
 
     //必须先启动manager进程组，否则会带线程fork
@@ -117,14 +112,7 @@ static int swFactoryProcess_notify(swFactory *factory, swDataHead *ev)
 }
 
 /**
- * @brief 
- * 
- * @param factory   调度使用哪个进程发
- * @param task 
- * @return *[ReactorThread] dispatch* 
- *
  * [ReactorThread] dispatch request to worker
- * 
  */
 static int swFactoryProcess_dispatch(swFactory *factory, swDispatchData *task)
 {
@@ -150,16 +138,14 @@ static int swFactoryProcess_dispatch(swFactory *factory, swDispatchData *task)
         }
         else
 #endif
-        {   
-            // Server_worker_schedule 函数来进行调度，决定应该向哪个 worker 进程发送数据。
+        {
             target_worker_id = swServer_worker_schedule(serv, fd, &task->data);
         }
     }
     else
     {
-        target_worker_id = task->target_worker_id; //哪个worker 进程处理
+        target_worker_id = task->target_worker_id;
     }
-    //printf("user_target_worker_id is %d\n", target_worker_id);
     //discard the data packet.
     if (target_worker_id < 0)
     {
@@ -187,7 +173,7 @@ static int swFactoryProcess_dispatch(swFactory *factory, swDispatchData *task)
         task->data.info.fd = conn->session_id;
         task->data.info.from_fd = conn->from_fd;
     }
-    //  swReactorThread_send2worker 函数用于发送数据 主要用于发送数据
+
     return swReactorThread_send2worker((void *) &(task->data), send_len, target_worker_id);
 }
 

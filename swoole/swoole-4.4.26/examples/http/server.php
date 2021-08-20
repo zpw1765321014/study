@@ -203,5 +203,5 @@ $http->on('workerStart', function ($serv, $id)
 {
     //var_dump($serv);
 });
-
+echo "http servrer start...\n";
 $http->start();

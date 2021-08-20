@@ -24,7 +24,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: b2cab41133e9340db6f5887583bff21aa3be1849 $ */
+/* $Id: 6491507fc37cabfdfc5d52418d7a13930f9946c5 $ */
 
 define('INIT_DIR', getcwd());
 
@@ -695,7 +695,7 @@ if (isset($argc) && $argc > 1) {
 					$html_output = is_resource($html_file);
 					break;
 				case '--version':
-					echo '$Id: b2cab41133e9340db6f5887583bff21aa3be1849 $' . "\n";
+					echo '$Id: 6491507fc37cabfdfc5d52418d7a13930f9946c5 $' . "\n";
 					exit(1);
 
 				default:
@@ -818,7 +818,7 @@ HELP;
 		if (substr(PHP_OS, 0, 3) == "WIN") {
 			$pass_options .= " -c " . escapeshellarg($conf_passed);
 		} else {
-			$pass_options .= " -c '" . realpath($conf_passed) . "'";
+			$pass_options .= " -c '$conf_passed'";
 		}
 	}
 
@@ -1324,7 +1324,7 @@ TEST $file
 				'CAPTURE_STDIO', 'STDIN', 'CGI', 'PHPDBG',
 				'INI', 'ENV', 'EXTENSIONS',
 				'SKIPIF', 'XFAIL', 'CLEAN',
-				'CREDITS', 'DESCRIPTION', 'CONFLICTS',
+				'CREDITS', 'DESCRIPTION',
 			))) {
 				$bork_info = 'Unknown section "' . $section . '"';
 			}
@@ -1599,8 +1599,6 @@ TEST $file
 	}
 
 	settings2params($ini_settings);
-
-	$env['TEST_PHP_EXTRA_ARGS'] = $pass_options . ' ' . $ini_settings;
 
 	// Check if test should be skipped.
 	$info = '';
@@ -1971,6 +1969,8 @@ COMMAND $cmd
 		}
 	}
 
+	@unlink($tmp_post);
+
 	$leaked = false;
 	$passed = false;
 
@@ -2160,10 +2160,6 @@ COMMAND $cmd
 
 	if ($warn) {
 		$restype[] = 'WARN';
-	}
-
-	if ($passed) {
-		@unlink($tmp_post);
 	}
 
 	if (!$passed) {

@@ -120,11 +120,10 @@ static int swReactorEpoll_add(swReactor *reactor, int fd, int fdtype)
     struct epoll_event e;
     swFd fd_;
     bzero(&e, sizeof(struct epoll_event));
-
+     
     fd_.fd = fd;
     fd_.fdtype = swReactor_fdtype(fdtype);
     e.events = swReactorEpoll_event_set(fdtype);
-
     swReactor_add(reactor, fd, fdtype);
 
     memcpy(&(e.data.u64), &fd_, sizeof(fd_));

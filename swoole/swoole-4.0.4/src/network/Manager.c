@@ -36,7 +36,7 @@ static void swManager_check_exit_status(swServer *serv, int worker_id, pid_t pid
 
 static swManagerProcess ManagerProcess;
 
-//create worker child proccess  主进程启动  并且创建worker 进程
+//create worker child proccess
 int swManager_start(swFactory *factory)
 {
     swFactoryProcess *object = factory->object;
@@ -51,7 +51,7 @@ int swManager_start(swFactory *factory)
         return SW_ERR;
     }
 
-    //worker进程的pipes  用于 reactor 线程与 worker 进程直接进行通信。
+    //worker进程的pipes
     for (i = 0; i < serv->worker_num; i++)
     {
         if (swPipeUnsock_create(&object->pipes[i], 1, SOCK_DGRAM) < 0)
@@ -116,7 +116,7 @@ int swManager_start(swFactory *factory)
     {
         return SW_ERR;
     }
-    //启动manager 进程
+
     pid = fork();
     switch (pid)
     {
@@ -132,7 +132,6 @@ int swManager_start(swFactory *factory)
 
         /**
          * create task worker process
-           启动worker 进程
          */
         if (serv->task_worker_num > 0)
         {
@@ -189,7 +188,7 @@ int swManager_start(swFactory *factory)
     }
     return SW_OK;
 }
-//检测工作进程的状态
+
 static void swManager_check_exit_status(swServer *serv, int worker_id, pid_t pid, int status)
 {
     if (status != 0)
@@ -201,7 +200,7 @@ static void swManager_check_exit_status(swServer *serv, int worker_id, pid_t pid
         }
     }
 }
-//管理进程事件循环 主要管理工作进程和用户自定义进程
+
 static int swManager_loop(swFactory *factory)
 {
     int pid, new_pid;
@@ -227,7 +226,7 @@ static int swManager_loop(swFactory *factory)
 
     if (serv->onManagerStart)
     {
-        serv->onManagerStart(serv);  //回调管理进程开启函数
+        serv->onManagerStart(serv);
     }
 
     reload_worker_num = serv->worker_num + serv->task_worker_num;
@@ -238,20 +237,17 @@ static int swManager_loop(swFactory *factory)
         return SW_ERR;
     }
 
-    //for reload   //  添加信号处理函数 swSignal_add
+    //for reload
     swSignal_add(SIGHUP, NULL);
-    swSignal_add(SIGTERM, swManager_signal_handle);  // SIGTERM 用于结束 server，只需要 running 设置为 0，manager 会逐个杀死 worker 进程
-    swSignal_add(SIGUSR1, swManager_signal_handle);// SIGUSR1 用于重载所有的 worker 进程
-    swSignal_add(SIGUSR2, swManager_signal_handle);// SIGUSR2 用于重载所有的 task_worker 进程
-    swSignal_add(SIGIO, swManager_signal_handle); // SIGIO 用于重启已经关闭了的 worker 进程
+    swSignal_add(SIGTERM, swManager_signal_handle);
+    swSignal_add(SIGUSR1, swManager_signal_handle);
+    swSignal_add(SIGUSR2, swManager_signal_handle);
+    swSignal_add(SIGIO, swManager_signal_handle);
 #ifdef SIGRTMIN
-    swSignal_add(SIGRTMIN, swManager_signal_handle);// SIGALRM 用于检测所有的超时请求
+    swSignal_add(SIGRTMIN, swManager_signal_handle);
 #endif
     //swSignal_add(SIGINT, swManager_signal_handle);
-/*如果设置了 serv->manager_alarm，那么就是开启了超时请求的监控，
-   此时需要设置 alarm 信号，
-   让 manager 进程定时去检查是否有超时的请求
-*/
+
     if (serv->manager_alarm > 0)
     {
         alarm(serv->manager_alarm);
@@ -262,7 +258,7 @@ static int swManager_loop(swFactory *factory)
 
     while (SwooleG.running > 0)
     {
-        _wait: pid = wait(&status);  // wait 函数，监控已结束的 worker 进程
+        _wait: pid = wait(&status);
 
         if (ManagerProcess.read_message)
         {
@@ -462,7 +458,7 @@ static int swManager_loop(swFactory *factory)
     {
         swProcessPool_shutdown(&serv->gs->task_workers);
     }
-    //wait child process  管理回收子进程
+    //wait child process
     for (i = 0; i < serv->worker_num; i++)
     {
         if (swWaitpid(serv->workers[i].pid, &status, 0) < 0)
@@ -470,7 +466,7 @@ static int swManager_loop(swFactory *factory)
             swSysError("waitpid(%d) failed.", serv->workers[i].pid);
         }
     }
-    //kill all user process  关闭子进程
+    //kill all user process
     if (serv->user_worker_map)
     {
         swManager_kill_user_worker(serv);
@@ -478,12 +474,12 @@ static int swManager_loop(swFactory *factory)
 
     if (serv->onManagerStop)
     {
-        serv->onManagerStop(serv);  //回调管理进程的停止事件
+        serv->onManagerStop(serv);
     }
 
     return SW_OK;
 }
-//创建工作进程
+
 static pid_t swManager_spawn_worker(swFactory *factory, int worker_id)
 {
     pid_t pid;
@@ -499,17 +495,17 @@ static pid_t swManager_spawn_worker(swFactory *factory, int worker_id)
     }
     //worker child processor
     else if (pid == 0)
-    {   //worker 进程进入事件循环
-        ret = swWorker_loop(factory, worker_id); //子进程进入事件循环
+    {
+        ret = swWorker_loop(factory, worker_id);
         exit(ret);
     }
     //parent,add to writer
     else
     {
-        return pid;  // 父进程 
+        return pid;
     }
 }
-//信号
+
 static void swManager_signal_handle(int sig)
 {
     switch (sig)
@@ -553,7 +549,7 @@ static void swManager_signal_handle(int sig)
         break;
     }
 }
-// 等待用户进程
+
 int swManager_wait_user_worker(swProcessPool *pool, pid_t pid, int status)
 {
     swServer *serv = SwooleG.serv;
@@ -568,7 +564,7 @@ int swManager_wait_user_worker(swProcessPool *pool, pid_t pid, int status)
         return SW_ERR;
     }
 }
-//主进程 杀死用户添加进程个
+
 void swManager_kill_user_worker(swServer *serv)
 {
     if (!serv->user_worker_map)
@@ -606,7 +602,7 @@ void swManager_kill_user_worker(swServer *serv)
         }
     }
 }
-//主进程
+
 pid_t swManager_spawn_user_worker(swServer *serv, swWorker* worker)
 {
     pid_t pid = fork();

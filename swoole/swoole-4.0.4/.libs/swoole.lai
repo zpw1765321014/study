@@ -32,4 +32,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/data/C_study/swoole-4.0.4/modules'
+libdir='/data/C_study/swoole/swoole-4.0.4/modules'

@@ -36,10 +36,7 @@ static void swReactor_onTimeout(swReactor *reactor);
 static void swReactor_onFinish(swReactor *reactor);
 static void swReactor_onBegin(swReactor *reactor);
 static int swReactor_defer(swReactor *reactor, swCallback callback, void *data);
-/*********
- * 
- * reactor 的创建根据对应的 操作系统接口
- * */
+
 int swReactor_create(swReactor *reactor, int max_event)
 {
     int ret;

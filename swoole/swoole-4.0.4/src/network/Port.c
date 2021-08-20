@@ -93,26 +93,21 @@ int swPort_enable_ssl_encrypt(swListenPort *ls)
     return SW_OK;
 }
 #endif
-/**
- * @brief swPort_listen 开启端口监听 ip 为ls->host ,端口号为ls->post
- * 
- * @param ls 
- * @return int 
- */
+
 int swPort_listen(swListenPort *ls)
 {
     int sock = ls->sock;
     int option = 1;
-     //printf("listen(%s:%d, %d)\n", ls->host, ls->port, ls->backlog);
+
     //listen stream socket
-    if (listen(sock, ls->backlog) < 0)  //监听 socket
+    if (listen(sock, ls->backlog) < 0)
     {
         swWarn("listen(%s:%d, %d) failed. Error: %s[%d]", ls->host, ls->port, ls->backlog, strerror(errno), errno);
         return SW_ERR;
     }
 
 #ifdef TCP_DEFER_ACCEPT
-    if (ls->tcp_defer_accept)  //  tcp_defer_accept ：当一个TCP连接有数据发送时才触发 accept 
+    if (ls->tcp_defer_accept)
     {
         if (setsockopt(sock, IPPROTO_TCP, TCP_DEFER_ACCEPT, (const void*) &ls->tcp_defer_accept, sizeof(int)) < 0)
         {
@@ -542,15 +537,7 @@ static int swPort_onRead_redis(swReactor *reactor, swListenPort *port, swEvent *
 
     return SW_OK;
 }
-/**
- * @brief EOF 自动分包
- *  如果启用了 EOF 自动分包，那么 swoole 会检测 EOF 符号，拼接完毕数据之后再向 worker 发送数据
-    swProtocol_recv_check_eof 用于检测 EOF 符号，如果没有检测到数据就存储到 buffer。
- * @param reactor 
- * @param port 
- * @param event 
- * @return int 
- */
+
 static int swPort_onRead_check_eof(swReactor *reactor, swListenPort *port, swEvent *event)
 {
     swConnection *conn = event->socket;

@@ -276,9 +276,6 @@ int swProtocol_recv_check_length(swProtocol *protocol, swConnection *conn, swStr
 }
 
 /**
- * @brief 
- * 
- swProtocol_recv_check_eof 检测 EOF
  * @return SW_ERR: close the connection
  * @return SW_OK: continue
  */

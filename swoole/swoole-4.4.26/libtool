@@ -332,7 +332,7 @@ link_all_deplibs=unknown
 sys_lib_search_path_spec="/usr/lib/gcc/x86_64-redhat-linux/4.8.5 /usr/lib64 /lib64"
 
 # Run-time system search path for libraries
-sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib64//bind9-export/ /usr/local/freetype/lib     /usr/local/mysql/lib     /usr/local/lib /lib /usr/lib /usr/lib64 /usr/local/lib "
+sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib64//bind9-export/ /usr/local/freetype/lib     /usr/local/mysql/lib     /usr/local/lib /usr/local/LuaJIT/lib /lib /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib /usr/local/lib64 /usr/local/lib /usr/lib /usr/lib64 "
 
 # Fix the shell variable $srcfile for the compiler.
 fix_srcfile_path=""
@@ -7598,7 +7598,7 @@ link_all_deplibs=unknown
 sys_lib_search_path_spec="/usr/lib/gcc/x86_64-redhat-linux/4.8.5 /usr/lib64 /lib64"
 
 # Run-time system search path for libraries
-sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib64//bind9-export/ /usr/local/freetype/lib     /usr/local/mysql/lib     /usr/local/lib /lib /usr/lib /usr/lib64 /usr/local/lib "
+sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib64//bind9-export/ /usr/local/freetype/lib     /usr/local/mysql/lib     /usr/local/lib /usr/local/LuaJIT/lib /lib /usr/lib /usr/lib64 /usr/local/lib /usr/local/lib /usr/local/lib64 /usr/local/lib /usr/lib /usr/lib64 "
 
 # Fix the shell variable $srcfile for the compiler.
 fix_srcfile_path=""

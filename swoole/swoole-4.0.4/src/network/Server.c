@@ -107,16 +107,9 @@ void swServer_close_port(swServer *serv, enum swBool_type only_stream_port)
         close(ls->sock);
     }
 }
-/**
- * @brief 主进程负责接收客户端请求listlen 的之后的客户端请求
- *   分发给对应的reactor 线程 监控处理
- * @param reactor 
- * @param event 
- * @return int 
- */
+
 int swServer_master_onAccept(swReactor *reactor, swEvent *event)
-{  
-   
+{
     swServer *serv = reactor->ptr;
     swReactor *sub_reactor;
     swSocketAddress client_addr;
@@ -124,14 +117,14 @@ int swServer_master_onAccept(swReactor *reactor, swEvent *event)
     swListenPort *listen_host = serv->connection_list[event->fd].object;
 
     int new_fd = 0, reactor_id = 0, i;
-    
+
     //SW_ACCEPT_AGAIN
     for (i = 0; i < SW_ACCEPT_MAX_COUNT; i++)
-    {   //accept 函数 处理网络连接请求
+    {
 #ifdef HAVE_ACCEPT4
         new_fd = accept4(event->fd, (struct sockaddr *) &client_addr, &client_addrlen, SOCK_NONBLOCK | SOCK_CLOEXEC);
 #else
-        new_fd = accept(event->fd, (struct sockaddr *) &client_addr, &client_addrlen);  //accept 函数 处理网络连接请求
+        new_fd = accept(event->fd, (struct sockaddr *) &client_addr, &client_addrlen);
 #endif
         if (new_fd < 0)
         {
@@ -174,15 +167,15 @@ int swServer_master_onAccept(swReactor *reactor, swEvent *event)
         }
         else
         {
-            reactor_id = new_fd % serv->reactor_num;  //取模 获取对应的reactor_id 由对应的reactor _id线程去处理
+            reactor_id = new_fd % serv->reactor_num;
         }
-        /**********swServer_connection_new 创建新的连接对象********/
+
         //add to connection_list
         swConnection *conn = swServer_connection_new(serv, listen_host, new_fd, event->fd, reactor_id);
         memcpy(&conn->info.addr, &client_addr, sizeof(client_addr));
-        sub_reactor = &serv->reactor_threads[reactor_id].reactor; //对应的reactor 线程
+        sub_reactor = &serv->reactor_threads[reactor_id].reactor;
         conn->socket_type = listen_host->type;
-        //printf("deal reactor id is :%d\n", reactor_id);
+
 #ifdef SW_USE_OPENSSL
         if (listen_host->ssl)
         {
@@ -326,9 +319,8 @@ static int swServer_start_proxy(swServer *serv)
 {
     int ret;
     swReactor *main_reactor = SwooleG.memory_pool->alloc(SwooleG.memory_pool, sizeof(swReactor));
-    /************创建主线程 start***********/
+
     ret = swReactor_create(main_reactor, SW_REACTOR_MAXEVENTS);
-   
     if (ret < 0)
     {
         swWarn("Reactor create failed");
@@ -365,11 +357,8 @@ static int swServer_start_proxy(swServer *serv)
     {
         close(serv->stream_fd);
     }
-     /************************************创建主线程 end**********************/
 
-     /**********************创建 reactor 线程 start****************/
     /**
-     * reactor 线程组 在master 进程组之后创建
      * create reactor thread
      */
     ret = swReactorThread_start(serv, main_reactor);
@@ -378,12 +367,9 @@ static int swServer_start_proxy(swServer *serv)
         swWarn("ReactorThread start failed");
         return SW_ERR;
     }
-   /**********************创建 reactor 线程 end****************/
+
 #ifndef SW_USE_TIMEWHEEL
     /**
-     * @brief 心跳检测线程 start
-     * 
-     
      * heartbeat thread
      */
     if (serv->heartbeat_check_interval >= 1 && serv->heartbeat_check_interval <= serv->heartbeat_idle_time)
@@ -392,7 +378,7 @@ static int swServer_start_proxy(swServer *serv)
         swHeartbeatThread_start(serv);
     }
 #endif
-/*****************心跳检测线程 end*********************/
+
     /**
      * master thread loop
      */
@@ -405,13 +391,13 @@ static int swServer_start_proxy(swServer *serv)
     SwooleG.main_reactor = main_reactor;
     SwooleG.pid = getpid();
     SwooleG.process_type = SW_PROCESS_MASTER;
-    //printf("create pid %d\n",getpid());
+
     /**
      * set a special id
      */
     main_reactor->id = serv->reactor_num;
     main_reactor->ptr = serv;
-    main_reactor->setHandle(main_reactor, SW_FD_LISTEN, swServer_master_onAccept); //主线程设置回调函数
+    main_reactor->setHandle(main_reactor, SW_FD_LISTEN, swServer_master_onAccept);
 
     if (serv->hooks[SW_SERVER_HOOK_MASTER_START])
     {
@@ -437,19 +423,17 @@ static int swServer_start_proxy(swServer *serv)
     {
         serv->onStart(serv);
     }
-    //主线程进入事件循环
+
     return main_reactor->wait(main_reactor, NULL);
 }
-// 本函数将用于监听的 socket 存放到 connection_list 当中，并设置相应的 info 属性；
+
 void swServer_store_listen_socket(swServer *serv)
 {
     swListenPort *ls;
     int sockfd;
-    
     LL_FOREACH(serv->listen_list, ls)
     {
         sockfd = ls->sock;
-       
         //save server socket to connection_list
         serv->connection_list[sockfd].fd = sockfd;
         //socket type
@@ -489,7 +473,7 @@ void swServer_store_listen_socket(swServer *serv)
         }
     }
 }
-//创建  worker 进程的buffer
+
 swString** swServer_create_worker_buffer(swServer *serv)
 {
     int i;
@@ -559,13 +543,9 @@ int swServer_create_task_worker(swServer *serv)
     }
     return SW_OK;
 }
-/*********
- * 
- *  初始化函数工作进程初始化
- * */
+
 int swServer_worker_init(swServer *serv, swWorker *worker)
 {
-    //是否绑定cpu
 #ifdef HAVE_CPU_AFFINITY
     if (serv->open_cpu_affinity)
     {
@@ -593,7 +573,7 @@ int swServer_worker_init(swServer *serv, swWorker *worker)
 
     //signal init
     swWorker_signal_init();
-    // buffer_input 用于存储来源于 reactor 线程发送的数据
+
     SwooleWG.buffer_input = swServer_create_worker_buffer(serv);
     if (!SwooleWG.buffer_input)
     {
@@ -643,17 +623,12 @@ void swServer_reopen_log_file(swServer *serv)
         swoole_redirect_stdout(SwooleG.log_fd);
     }
 }
-/**
- * @brief  启动整个服务的关键
- * 
- * @param serv 
- * @return int 
- */
+
 int swServer_start(swServer *serv)
 {
     swFactory *factory = &serv->factory;
     int ret;
-    // wServer_start_check 函数用于检查各种回调函数已经被正确设置
+
     ret = swServer_start_check(serv);
     if (ret < 0)
     {
@@ -674,7 +649,7 @@ int swServer_start(swServer *serv)
     {
         swLog_init(SwooleG.log_file);
     }
-    //run as daemon  守护进程启动
+    //run as daemon
     if (serv->daemonize > 0)
     {
         /**
@@ -706,10 +681,8 @@ int swServer_start(swServer *serv)
         }
     }
 
-    //master pid   记录此时的主进程  id
+    //master pid
     serv->gs->master_pid = getpid();
-    //swTrace("master pid is %d\n",getpid());
-    //printf("master pid is %d\n",getpid());
     serv->gs->now = serv->stats->start_time = time(NULL);
 
     if (serv->dispatch_mode == SW_DISPATCH_STREAM)
@@ -795,13 +768,12 @@ int swServer_start(swServer *serv)
             i++;
         }
     }
-    /********************创建管理进程 start**********************/
+
     //factory start
     if (factory->start(factory) < 0)
     {
         return SW_ERR;
     }
-     /********************创建管理进程 end**********************/
     //signal Init
     swServer_signal_init(serv);
 
@@ -811,14 +783,13 @@ int swServer_start(swServer *serv)
         ret = snprintf(SwooleTG.buffer_stack->str, SwooleTG.buffer_stack->size, "%d", getpid());
         swoole_file_put_contents(serv->pid_file, SwooleTG.buffer_stack->str, ret);
     }
-    //printf("%d\n",serv->factory_mode);
     if (serv->factory_mode == SW_MODE_SINGLE)
     {
         ret = swReactorProcess_start(serv);
     }
     else
     {
-        ret = swServer_start_proxy(serv); //  开启 reactor 多线程
+        ret = swServer_start_proxy(serv);
     }
     swServer_free(serv);
     serv->gs->start = 0;
@@ -879,13 +850,7 @@ void swServer_init(swServer *serv)
 
     SwooleG.serv = serv;
 }
-/**
- * @brief 
- * 
- *  创建 reactor 多线程
- * @param serv 
- * @return int 
- */
+
 int swServer_create(swServer *serv)
 {
     if (SwooleG.main_reactor)
@@ -1046,7 +1011,7 @@ int swServer_tcp_feedback(swServer *serv, int fd, int event)
     {
         return swWorker_send2reactor((swEventData *) &_send.info, sizeof(_send.info), fd);
     }
-    else  //BASE mode == SW_MODE_模式
+    else
     {
         return swReactorThread_send(&_send);
     }
@@ -1081,9 +1046,7 @@ swPipe * swServer_get_pipe_object(swServer *serv, int pipe_fd)
 {
     return (swPipe *) serv->connection_list[pipe_fd].object;
 }
-/*********
- * swServer_tcp_send 函数
- * */
+
 int swServer_tcp_send(swServer *serv, int fd, void *data, uint32_t length)
 {
     swSendData _send;

@@ -2859,11 +2859,14 @@ static inline zend_bool is_http_server(zval *zobject)
     return instanceof_function(Z_OBJCE_P(zobject), swoole_http_server_ce);
 }
 /**
-  swoole 启动函数
-**/
+ * 
+ * 
+ *服务器启动
+ * @brief Construct a new php method object
+ * 
+ */
 static PHP_METHOD(swoole_server, start)
-{  
-    
+{
     zval *zserv = ZEND_THIS;
     swServer *serv = php_swoole_server_get_and_check_server(zserv);
 
@@ -2883,10 +2886,10 @@ static PHP_METHOD(swoole_server, start)
         php_swoole_fatal_error(E_WARNING, "eventLoop has already been created, unable to start %s", SW_Z_OBJCE_NAME_VAL_P(zserv));
         RETURN_FALSE;
     }
-    /**********检测注册的回调函数************/
+    /**************注册回调函数*********************/
     php_swoole_server_register_callbacks(serv);
-    
-    //接受数据设置的回调函数
+
+    swTrace("php_swoole_server_register_callbacks \n");
     serv->onReceive = php_swoole_onReceive;
 
     if (is_websocket_server(zserv) || is_http_server(zserv))
@@ -2919,18 +2922,14 @@ static PHP_METHOD(swoole_server, start)
         ls->open_http2_protocol = !!(protocol_flag & SW_HTTP2_PROTOCOL);
         ls->open_websocket_protocol = !!(protocol_flag & SW_WEBSOCKET_PROTOCOL);
     }
-    //服务启动之前作出的检测
 
     php_swoole_server_before_start(serv, zserv);
 
-    /*启动服务的关键 start*/
-    
     if (swServer_start(serv) < 0)
     {
         php_swoole_fatal_error(E_ERROR, "failed to start server. Error: %s", sw_error);
     }
 
-     /*启动服务的关键 end*/
     RETURN_TRUE;
 }
 
