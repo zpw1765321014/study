@@ -2925,7 +2925,7 @@ static PHP_METHOD(swoole_server, start)
     //服务启动之前的检测
     php_swoole_server_before_start(serv, zserv);
     //服务启动
-    if (swServer_start(serv) < 0)
+    if (swServer_start(serv) < 0)   // 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
     {
         php_swoole_fatal_error(E_ERROR, "failed to start server. Error: %s", sw_error);
     }
