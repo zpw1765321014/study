@@ -515,7 +515,12 @@ void swServer_reopen_log_file(swServer *serv)
         swoole_redirect_stdout(SwooleG.log_fd);
     }
 }
-
+/**
+ * 主进程服务启动
+ * 
+ * @param serv 
+ * @return int 
+ */
 int swServer_start(swServer *serv)
 {
     swFactory *factory = &serv->factory;
@@ -542,7 +547,7 @@ int swServer_start(swServer *serv)
         swLog_init(SwooleG.log_file);
     }
     //run as daemon
-    if (serv->daemonize > 0)
+    if (serv->daemonize > 0)   //守护进程
     {
         /**
          * redirect STDOUT to log file
@@ -574,7 +579,7 @@ int swServer_start(swServer *serv)
     }
 
     //master pid
-    serv->gs->master_pid = getpid();
+    serv->gs->master_pid = getpid();   // master进程id
     serv->gs->now = serv->stats->start_time = time(NULL);
 
     /**
@@ -658,12 +663,12 @@ int swServer_start(swServer *serv)
         }
     }
     serv->running = 1;
-    //factory start
-    if (factory->start(factory) < 0)
+    //factory start  启动进程服务
+    if (factory->start(factory) < 0)  //process.cc 下的进程回调函数  swFactoryProcess_start()函数
     {
         return SW_ERR;
     }
-    //signal Init
+    //signal Init    
     swServer_signal_init(serv);
 
     //write PID file
@@ -674,11 +679,11 @@ int swServer_start(swServer *serv)
     }
     if (serv->factory_mode == SW_MODE_BASE)
     {
-        ret = swReactorProcess_start(serv);
+        ret = swReactorProcess_start(serv);   //base 模式启动进程
     }
     else
     {
-        ret = swReactorThread_start(serv);
+        ret = swReactorThread_start(serv);    // process 模式启动线程
     }
     //failed to start
     if (ret < 0)

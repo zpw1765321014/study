@@ -207,6 +207,9 @@ static int swFactoryProcess_start(swFactory *factory)
     bzero(object->send_buffer, sizeof(swDataHead));
 
     /**
+     * 
+     * 
+     *启动管理进程
      * The manager process must be started first, otherwise it will have a thread fork
      */
     if (swManager_start(serv) < 0)

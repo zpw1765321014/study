@@ -479,7 +479,14 @@ static int swManager_loop(swFactory *factory)
 
     return SW_OK;
 }
-
+/**
+ * 
+ * 管理进程创建worker 进程
+ * 
+ * @param factory 
+ * @param worker_id 
+ * @return pid_t 
+ */
 static pid_t swManager_spawn_worker(swFactory *factory, int worker_id)
 {
     pid_t pid;

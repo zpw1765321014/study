@@ -789,7 +789,7 @@ int swWorker_loop(swFactory *factory, int worker_id)
         serv->buffer_pool = swLinkedList_new(0, NULL);
     }
 
-    swWorker_onStart(serv);
+    swWorker_onStart(serv);  //出发进程启动函数
 
 #ifdef HAVE_SIGNALFD
     if (SwooleG.use_signalfd)

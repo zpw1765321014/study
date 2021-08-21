@@ -2889,9 +2889,9 @@ static PHP_METHOD(swoole_server, start)
     /**************注册回调函数*********************/
     php_swoole_server_register_callbacks(serv);
 
-    swTrace("php_swoole_server_register_callbacks \n");
-    serv->onReceive = php_swoole_onReceive;
-
+   
+    serv->onReceive = php_swoole_onReceive;  //设置对应的数据函数
+    /*******************webscoket server and http server 的处理*************************/
     if (is_websocket_server(zserv) || is_http_server(zserv))
     {
         zval *zsetting = sw_zend_read_and_convert_property_array(swoole_server_ce, ZEND_THIS, ZEND_STRL("setting"), 0);
@@ -2922,9 +2922,9 @@ static PHP_METHOD(swoole_server, start)
         ls->open_http2_protocol = !!(protocol_flag & SW_HTTP2_PROTOCOL);
         ls->open_websocket_protocol = !!(protocol_flag & SW_WEBSOCKET_PROTOCOL);
     }
-
+    //服务启动之前的检测
     php_swoole_server_before_start(serv, zserv);
-
+    //服务启动
     if (swServer_start(serv) < 0)
     {
         php_swoole_fatal_error(E_ERROR, "failed to start server. Error: %s", sw_error);
