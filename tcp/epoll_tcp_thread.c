@@ -190,10 +190,11 @@ int main()
     ThreaDataPackage.ev.events = EPOLLIN | EPOLLET;//对应的文件描述符可读并且是et的epoll工作模式
     ThreaDataPackage.ev.data.fd =sockfd ;
     if (epoll_ctl(ThreaDataPackage.epfd , EPOLL_CTL_ADD,sockfd, &ThreaDataPackage.ev) < 0)//加入epoll事件集合
-        {
+    {
             perror("epoll_ctl error:");
             exit(-1);
-        }
+    }
+    //epoll 进入事件循环等待
     while(1)
     {
         nfds = epoll_wait(ThreaDataPackage.epfd , ThreaDataPackage.waitEvent, ThreaDataPackage.MAX+1, -1);
